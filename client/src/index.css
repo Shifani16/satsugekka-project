@@ -1,38 +1,61 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap');
 
 :root {
-  --text: #6b6375;
+  --text: #fff;
   --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
+  --gray:#768A91 ;
+  --bg: #1B221B;
+  --bg-light:#202820 ;
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
+  /* color: var(--text); */
   background: var(--bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  @media (max-width: 1024px) {
+  /* @media (max-width: 1024px) {
     font-size: 16px;
-  }
+  } */
 }
 
-@media (prefers-color-scheme: dark) {
+@theme {
+  --color-primary:#D8D5B6;
+  --color-accent: #B7DD30;
+  --color-accent-secondary:#00A05C;
+  --color-gray:#768A91;
+  --color-dark-gray:#435156;
+  --color-bg: #1B221B;
+  --color-bg-light:#202820;
+  --color-bg-dark:#171D17;
+  
+  --font-plex: "IBM Plex Mono", monospace;
+  --font-maru: "MaruBerry", sans-serif;
+  --font-humour: "Humour", sans-serif;
+  --font-dogica: "Dogica", sans-serif;
+}
+
+@font-face {
+  font-family: 'MaruBerry';
+  src: url('/font/maru-berry.ttf');
+}
+
+@font-face {
+  font-family: 'Humour';
+  src: url('/font/Humour-Normal.ttf');
+}
+
+@font-face {
+  font-family: 'Dogica';
+  src: url('/font/dogica.ttf');
+}
+
+
+/* @media (prefers-color-scheme: dark) {
   :root {
     --text: #9ca3af;
     --text-h: #f3f4f6;
@@ -110,4 +133,4 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
-}
+} */

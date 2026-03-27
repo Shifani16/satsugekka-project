@@ -1,0 +1,116 @@
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import type { BlogEntry } from "../blog";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+
+export default function BlogPostDetail() {
+  const params = useParams();
+  console.log(params);
+  const { postId } = params;
+  const [post, setPost] = useState<BlogEntry | null>(null);
+  const [prevPost, setPrevPost] = useState<BlogEntry | null>(null);
+  const [nextPost, setNextPost] = useState<BlogEntry | null>(null);
+
+  useEffect(() => {
+    const baseURL = import.meta.env.VITE_API_URL;
+
+    fetch(`${baseURL}/my-blog`)
+      .then((res) => res.json())
+      .then((data) => {
+        const blogArray = data.blogs || data;
+
+        const currentIndex = blogArray.findIndex((b: any) =>
+          b.linkhref.includes(postId),
+        );
+
+        if (currentIndex !== -1) {
+          setPost(blogArray[currentIndex]);
+          setPrevPost(blogArray[currentIndex - 1] || null);
+          setNextPost(blogArray[currentIndex + 1] || null);
+        }
+      });
+    window.scrollTo(0, 0);
+  }, [postId]);
+
+  if (!post) return <p>Loading post...</p>;
+
+  return (
+    <section className="px-15 py-8 font-plex">
+      <div className="flex flex-col">
+        <h1 className="font-bold text-4xl text-white">{post.title}</h1>
+        <p className="font-dogica text-primary mt-5 text-xs text-right">
+          {new Date(post.updated_at).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          })}
+        </p>
+      </div>
+      <div className="flex justify-center w-full h-auto mt-10">
+        <img
+          className="rounded-xl shadow-lg w-1/2"
+          src={post.thumbnail_src}
+          alt={post.title}
+        />
+      </div>
+      <motion.img
+        initial={{ opacity: 0, y: -50 }}
+        whileInView={{ opacity: 1, y: 5 }}
+        transition={{ duration: 1, ease: "easeOut" }}
+        viewport={{ once: false, margin: "-50px" }}
+        className="absolute -z-10 right-0 w-32"
+        src="/img/Emotion-3.png"
+        alt=""
+      />
+      <p className="mt-10 text-primary font-semibold leading-relaxed">
+        {post.content}
+      </p>
+
+      <div className="mt-30 flex flex-row text-primary gap-10 mb-30">
+        {prevPost ? (
+          <Link
+            className="px-4 py-2 w-1/2 border border-accent-secondary opacity-70 rounded-md transition-all duration-300 hover:scale-102 hover:opacity-100 flex items-center justify-between"
+            to={prevPost.linkhref}
+          >
+            <i className="fa-solid fa-arrow-left text-white mr-4"></i>
+            <div className="text-right flex-1">
+              <span className="text-[10px] block opacity-50 uppercase">
+                Previous
+              </span>
+              <h1 className="truncate text-sm font-bold">{prevPost.title}</h1>
+            </div>
+          </Link>
+        ) : (
+          <div className="w-1/2 opacity-20 border border-dashed border-accent-secondary rounded-md px-4 py-2 flex items-center italic text-xs"></div>
+        )}
+
+        {nextPost ? (
+          <Link
+            className="px-4 py-2 w-1/2 border border-accent-secondary opacity-70 rounded-md text-right transition-all duration-300 hover:scale-102 hover:opacity-100 flex items-center justify-between"
+            to={nextPost.linkhref}
+          >
+            <div className="text-left flex-1">
+              <span className="text-[10px] block opacity-50 uppercase">
+                Next Up
+              </span>
+              <h1 className="truncate text-sm font-bold">{nextPost.title}</h1>
+            </div>
+            <i className="fa-solid fa-arrow-right text-white ml-4"></i>
+          </Link>
+        ) : (
+          <div className="w-1/2 opacity-20 border border-dashed border-accent-secondary rounded-md px-4 py-2 flex items-center justify-end italic text-xs"></div>
+        )}
+        <motion.img
+          initial={{ opacity: 0, y: -50 }}
+          whileInView={{ opacity: 1, y: 5 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          viewport={{ once: false, margin: "-50px" }}
+          className="absolute -z-10 left-0 w-32"
+          src="/img/Emotion-4.png"
+          alt=""
+        />
+      </div>
+    </section>
+  );
+}

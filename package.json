@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "cors": "^2.8.6",
+    "embla-carousel-react": "^8.6.0"
+  }
+}
