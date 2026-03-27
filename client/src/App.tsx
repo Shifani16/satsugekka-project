@@ -1,121 +1,97 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import "./App.css";
+import { useState, useEffect } from "react";
+import { Routes, Route, BrowserRouter, useLocation } from "react-router-dom";
+import Intro from "./component/intro";
+import Home from "./component/home";
+import Navbar from "./component/navbar";
+import Blog from "./component/blog";
+import Translation from "./component/translation";
+import About from "./component/about";
+import Footer from "./component/footer";
+import BlogPostDetail from "./component/reusable/BlogPostDetail";
+import TranslationDetail from "./component/reusable/TranslationDetail";
+import Login from "./component/admin/login";
+import Sidebar from "./component/admin/sidebar";
+import MyBlog from "./component/admin/myBlog";
+import Setting from "./component/admin/setting";
+import CreateTrans from "./component/admin/createTrans";
+import MyTrans from "./component/admin/myTrans";
+import ProtectedRoute from "./component/admin/ProtectedRoute";
+import CreateBlog from "./component/admin/createBlog";
 
-function App() {
-  const [count, setCount] = useState(0)
+function AppContent({ showIntro }: { showIntro: boolean }) {
+  const location = useLocation();
+  const adminPaths = [
+    "/vani",
+    "/create-blog",
+    "/my-blog",
+    "/setting-char",
+    "/create-translation",
+    "/my-translation",
+  ];
+  const isExcludedPage = adminPaths.includes(location.pathname);
+
+  const showSidebar = isExcludedPage && location.pathname !== "/vani";
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className={showSidebar ? "flex min-h-screen" : ""}>
+      {showIntro && !isExcludedPage && <Intro />}
 
-      <div className="ticks"></div>
+      {showSidebar ? <Sidebar /> : !isExcludedPage && <Navbar />}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      <div className={showSidebar ? "flex-1 p-8" : "content"}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:postId" element={<BlogPostDetail />} />
+          <Route path="/translation" element={<Translation />} />
+          <Route
+            path="/translation/:translation_id"
+            element={<TranslationDetail />}
+          />
+          <Route path="/about" element={<About />} />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+          <Route path="/vani" element={<Login />} />
+
+          <Route element={<ProtectedRoute />}>
+            <Route path="/create-blog" element={<CreateBlog />} />
+            <Route path="/my-blog" element={<MyBlog />} />
+            <Route path="/setting-char" element={<Setting />} />
+            <Route path="/create-translation" element={<CreateTrans />} />
+            <Route path="/my-translation" element={<MyTrans />} />
+          </Route>
+        </Routes>
+      </div>
+
+      {!isExcludedPage && <Footer />}
+    </div>
+  );
 }
 
-export default App
+function App() {
+  const [showIntro, setShowIntro] = useState(true);
+
+  useEffect(() => {
+    if (showIntro) {
+      document.body.style.overflow = "hidden";
+    }
+
+    const timer = setTimeout(() => {
+      setShowIntro(false);
+    }, 1000);
+
+    return () => {
+      clearTimeout(timer);
+
+      document.body.style.overflow = "unset";
+    };
+  }, [showIntro]);
+
+  return (
+    <BrowserRouter>
+      <AppContent showIntro={showIntro} />
+    </BrowserRouter>
+  );
+}
+
+export default App;
