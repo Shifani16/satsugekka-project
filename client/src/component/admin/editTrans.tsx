@@ -1,9 +1,12 @@
-import { useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { supabase } from "../../api/supabaseClient";
 import Popup from "../reusable/Popup";
+import { useNavigate, useParams } from "react-router-dom";
 
-export default function CreateTrans() {
+export default function EditTrans() {
   const [content, setContent] = useState("");
+  const { slug } = useParams();
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
@@ -17,76 +20,66 @@ export default function CreateTrans() {
     message: "",
   });
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (preview) URL.revokeObjectURL(preview);
+  useEffect(() => {
+    const fetchPost = async () => {
+      const res = await fetch(`${baseURL}/translation-posts/${slug}`);
+      if (res.ok) {
+        const data = await res.json();
+        setTitle(data.title);
+        setContent(data.content);
+        setPreview(data.thumbnail_src);
+      }
+    };
+    if (slug) fetchPost();
+  }, [slug]);
 
-      setThumbnail(file);
-      setPreview(URL.createObjectURL(file));
-    }
-  };
-
-  const handlePublish = async () => {
-    if (!title || !content || !thumbnail) {
-      setStatusPopup({
-        isOpen: true,
-        type: "danger",
-        title: "Missing Info",
-        message: "Title, Content, and Thumbnail are all required!",
-      });
-      return;
-    }
-
+  const handleUpdate = async () => {
     setIsSubmitting(true);
-
     try {
-      const fileExt = thumbnail?.name.split(".").pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `thumbnails/${fileName}`;
+      let finalThumbnail = preview;
 
-      const { error: uploadError } = await supabase.storage
-        .from("post-thumbnail")
-        .upload(filePath, thumbnail);
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from("post-thumbnail")
-        .getPublicUrl(filePath);
+      if (thumbnail) {
+        const fileExt = thumbnail?.name.split(".").pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const { error } = await supabase.storage
+          .from("post-thumbnail")
+          .upload(`thumbnails/${fileName}`, thumbnail);
+        if (error) throw error;
+        const { data } = supabase.storage
+          .from("post-thumbnail")
+          .getPublicUrl(`thumbnails/${fileName}`);
+        finalThumbnail = data.publicUrl;
+      }
 
       const slug = title
         .toLowerCase()
         .replace(/[^a-z0-9\s]/g, "")
         .replace(/\s+/g, "-");
 
-      const postData = {
+      const updatedData = {
         title,
         content,
-        short_description: content.substring(0, 100).replace(/<[^>]*>?/gm, ""),
+        thumbnail_src: finalThumbnail,
         linkhref: `/translation/${slug}`,
-        thumbnail_src: urlData.publicUrl,
       };
 
-      const resp = await fetch(`${baseURL}/translation-posts`, {
-        method: "POST",
+      const resp = await fetch(`${baseURL}/translation-posts/${slug}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(postData),
+        body: JSON.stringify(updatedData),
       });
 
       if (resp.ok) {
         setStatusPopup({
           isOpen: true,
           type: "success",
-          title: "Published",
-          message: "Post posted successfully!",
+          title: "Updated",
+          message: "Post updated successfully!",
         });
-        setTitle("");
-        setContent("");
-        setThumbnail(null);
-        setPreview(null);
+        setTimeout(() => navigate("/my-translation"), 1500);
+        
       } else {
-        throw new Error("Failed to publish");
+        throw new Error("Failed to update");
       }
     } catch (err: any) {
       setStatusPopup({
@@ -100,6 +93,18 @@ export default function CreateTrans() {
     }
   };
 
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (preview) URL.revokeObjectURL(preview);
+
+      setThumbnail(file);
+      setPreview(URL.createObjectURL(file));
+    }
+  };
+
+
+
   return (
     <section className="font-plex max-w-4xl">
       <h1 className="text-white text-5xl font-bold mb-8">Create New</h1>
@@ -107,6 +112,7 @@ export default function CreateTrans() {
       <h1 className="font-plex text-accent text-xl font-bold mb-3">Title</h1>
       <input
         className="px-4 py-2 bg-white/20 border rounded-md text-white w-full border-accent focus:border-accent-secondary outline-none"
+        value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Write the title here..."
         type="text"
@@ -117,6 +123,7 @@ export default function CreateTrans() {
       </h1>
       <textarea
         onChange={(e) => setContent(e.target.value)}
+        value={content}
         className="px-4 py-4 min-h-125 bg-white/20 border rounded-md text-white w-full border-accent focus:border-accent-secondary outline-none resize-none"
         placeholder="Write ur content here fellas"
       />
@@ -155,7 +162,7 @@ export default function CreateTrans() {
       </div>
 
       <button
-        onClick={handlePublish}
+        onClick={handleUpdate}
         disabled={isSubmitting}
         className={`mt-20 w-full text-center py-2 rounded-md font-bold mb-10 transition-all ${
           isSubmitting
@@ -163,7 +170,7 @@ export default function CreateTrans() {
             : "bg-accent cursor-pointer hover:bg-accent-secondary text-bg hover:text-white"
         }`}
       >
-        {isSubmitting ? "Publishing..." : "Publish"}
+        {isSubmitting ? "Updating..." : "Update Post"}
       </button>
       <Popup
         isOpen={statusPopup.isOpen}

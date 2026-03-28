@@ -63,9 +63,10 @@ export default function BlogPostDetail() {
         src="/img/Emotion-3.png"
         alt=""
       />
-      <p className="mt-10 text-primary font-semibold leading-relaxed">
-        {post.content}
-      </p>
+      <div
+        className="mt-10 text-primary leading-relaxed blog-content wrap-break-word whitespace-normal"
+        dangerouslySetInnerHTML={{ __html: post.content }}
+      />
 
       <div className="mt-30 flex flex-row text-primary gap-10 mb-30">
         {prevPost ? (

@@ -18,6 +18,8 @@ import CreateTrans from "./component/admin/createTrans";
 import MyTrans from "./component/admin/myTrans";
 import ProtectedRoute from "./component/admin/ProtectedRoute";
 import CreateBlog from "./component/admin/createBlog";
+import EditBlog from "./component/admin/editBlog";
+import EditTrans from "./component/admin/editTrans";
 
 function AppContent({ showIntro }: { showIntro: boolean }) {
   const location = useLocation();
@@ -28,8 +30,9 @@ function AppContent({ showIntro }: { showIntro: boolean }) {
     "/setting-char",
     "/create-translation",
     "/my-translation",
+    "/edit-translation/:slug"
   ];
-  const isExcludedPage = adminPaths.includes(location.pathname);
+  const isExcludedPage = adminPaths.includes(location.pathname) || location.pathname.startsWith("/edit-blog") || location.pathname.startsWith("/edit-translation");;
 
   const showSidebar = isExcludedPage && location.pathname !== "/vani";
 
@@ -56,9 +59,11 @@ function AppContent({ showIntro }: { showIntro: boolean }) {
           <Route element={<ProtectedRoute />}>
             <Route path="/create-blog" element={<CreateBlog />} />
             <Route path="/my-blog" element={<MyBlog />} />
+            <Route path="/edit-blog/:id" element={<EditBlog />} />
             <Route path="/setting-char" element={<Setting />} />
             <Route path="/create-translation" element={<CreateTrans />} />
             <Route path="/my-translation" element={<MyTrans />} />
+            <Route path="/edit-translation/:slug" element={<EditTrans />} />
           </Route>
         </Routes>
       </div>

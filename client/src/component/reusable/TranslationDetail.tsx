@@ -36,9 +36,17 @@ export default function TranslationDetail() {
 
   return (
     <section className="px-10 py-10">
-      <h1 className="text-white font-plex font-bold text-4xl mb-10">
-        {translations?.title}
-      </h1>
+      <div className="flex flex-col">
+        <h1 className="font-bold text-4xl text-white">{translations?.title}</h1>
+        <p className="font-dogica mb-5 text-primary mt-5 text-xs text-right">
+          {translations?.updated_at &&
+            new Date(translations.updated_at).toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            })}
+        </p>
+      </div>
       <div className="bg-bg-light rounded-lg">
         <ChatBox />
       </div>
