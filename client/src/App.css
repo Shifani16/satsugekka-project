@@ -9,19 +9,44 @@
 
 .embla__container {
   display: flex;
-  /* Adds a gap between slides without breaking the math */
   margin-left: -10px; 
 }
 
 .embla__slide {
-  flex: 0 0 33.33%; /* This shows exactly 3 slides per view */
+  flex: 0 0 33.33%; 
   min-width: 0;
-  padding-left: 10px; /* The gap */
+  padding-left: 10px; 
 }
 
-/* Responsive: 1 slide on mobile, 3 on desktop */
 @media (max-width: 768px) {
   .embla__slide {
     flex: 0 0 100%; 
   }
+}
+
+.ql-editor {
+  color: white;
+  min-height: 400px;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.ql-toolbar {
+  background-color: #B7DD30;
+  border-color: #B7DD30 !important;
+}
+
+.ql-container {
+  border-color: #B7DD30 !important;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+
+.blog-content p {
+  margin-bottom: 2rem; 
+  line-height: 1.8;     
+}
+
+
+.ql-editor p {
+  margin-bottom: 2rem !important;
 }

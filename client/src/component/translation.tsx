@@ -1,10 +1,11 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState  } from "react";
 import TranslationCard from "./reusable/TranslationCard";
 import { motion } from "framer-motion";
+import Pagination from "./reusable/Pagination";
 
 export interface TranslationEntry {
-  content: ReactNode;
-  post_id: number;
+  content: string;
+  translation_id: number;
   title: string;
   short_description: string;
   thumbnail_src: string;
@@ -17,12 +18,14 @@ export default function Translation() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 5;
+
   useEffect(() => {
     const baseURL = import.meta.env.VITE_API_URL;
 
     fetch(`${baseURL}/translation-posts`)
       .then((res) => {
-        console.log("Res Status", res.status);
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();
       })
@@ -40,11 +43,22 @@ export default function Translation() {
   const filteredPosts = translations.filter(
     (translation) =>
       translation.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      translation.short_description?.toLowerCase().includes(searchTerm.toLowerCase()),
+      translation.short_description
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase())
   );
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  const indexOfLast = currentPage * postsPerPage;
+  const indexOfFirst = indexOfLast - postsPerPage;
+  const currentItems = filteredPosts.slice(indexOfFirst, indexOfLast);
+
   return (
-    <section className="px-15 py-5 h-full">
+    <section className="px-15 py-5 h-full relative">
       <motion.img
         initial={{ opacity: 0, y: -50 }}
         whileInView={{ opacity: 1, y: 5 }}
@@ -54,6 +68,7 @@ export default function Translation() {
         alt=""
         className="absolute -z-10 right-0 w-64"
       />
+
       <div className="flex flex-row gap-10">
         <h1 className="font-plex text-accent text-6xl font-bold">
           Translation
@@ -63,27 +78,54 @@ export default function Translation() {
         </h1>
       </div>
 
-      <div className="relative mt-10 flex items-center bg-white/8 border border-accent rounded-3xl px-4 py-3 shadow-2xl w-1/3">
+      <div className="relative mt-10 flex items-center bg-white/10 border border-accent rounded-3xl px-4 py-3 shadow-2xl w-1/3">
         <input
           type="text"
           placeholder="Search by title or keyword..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="font-plex text-white w-full border-accent outline-none"
+          className="font-plex text-white w-full bg-transparent outline-none"
         />
-      </div>
-
-      <div className="flex flex-col gap-5">
-        {isLoading ? (
-          <p className="text-white font-plex">Loading your stories...</p>
-        ) : filteredPosts.length > 0 ? (
-          filteredPosts.map((item) => <TranslationCard key={item.post_id} {...item} />)
-        ) : (
-          <p className="text-gray-400 font-plex">
-            No blogs found matching "{searchTerm}"
-          </p>
+        {searchTerm && (
+          <button 
+            onClick={() => setSearchTerm("")}
+            className="text-accent hover:text-white ml-2"
+          >
+            <i className="fa-solid fa-xmark"></i>
+          </button>
         )}
       </div>
+
+      <div className="flex flex-col gap-5 mt-10">
+        {isLoading ? (
+          <div className="py-20 text-center">
+            <p className="text-white font-plex animate-pulse">Fetching posts...</p>
+          </div>
+        ) : currentItems.length > 0 ? (
+          currentItems.map((item) => (
+            <TranslationCard key={item.translation_id} {...item} />
+          ))
+        ) : (
+          <div className="py-20 text-center">
+            <p className="text-gray-400 font-plex">
+              {searchTerm 
+                ? `No translations found matching "${searchTerm}"` 
+                : "No posts found."}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Pagination Controls */}
+      {!isLoading && totalPages > 1 && (
+        <div className="flex items-center justify-center mt-20 mb-10">
+          <Pagination
+            currentPages={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
+        </div>
+      )}
     </section>
   );
 }

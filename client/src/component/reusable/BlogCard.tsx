@@ -1,7 +1,10 @@
 import type React from "react";
-import type { BlogEntry } from "../blog"; 
+import type { BlogEntry } from "../blog";
 
-type BlogCardProps = Pick<BlogEntry, "title" | "short_description" | "thumbnail_src" | "linkhref">;
+type BlogCardProps = Pick<
+  BlogEntry,
+  "title" | "short_description" | "thumbnail_src" | "linkhref"
+>;
 
 const BlogCard: React.FC<BlogCardProps> = ({
   title,
@@ -12,12 +15,12 @@ const BlogCard: React.FC<BlogCardProps> = ({
   return (
     <div className="relative grid grid-cols-1 md:grid-cols-2 items-center transition-all duration-300 hover:scale-[1.01] gap-10 py-6">
       <div className="flex flex-col border-l-2 border-accent pl-6">
-        <h2 className="font-plex text-white text-xl font-bold">
-          {title}
-        </h2>
-        <p className="font-plex text-gray-400 mt-4 line-clamp-2">
-          {short_description}
-        </p>
+        <h2 className="font-plex text-white text-xl font-bold">{title}</h2>
+        <div
+          className=" font-plex text-primary leading-relaxed blog-content wrap-break-word whitespace-normal"
+          dangerouslySetInnerHTML={{ __html: short_description}}
+        />
+        
         <a
           rel="noopener noreferrer"
           href={linkhref}
@@ -27,7 +30,7 @@ const BlogCard: React.FC<BlogCardProps> = ({
           <i className="fa-solid fa-arrow-right ml-3 -rotate-45"></i>
         </a>
       </div>
-      
+
       <div className="flex justify-center md:justify-end">
         <img
           src={thumbnail_src || "https://via.placeholder.com/400"}

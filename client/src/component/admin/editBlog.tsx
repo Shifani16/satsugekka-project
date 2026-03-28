@@ -1,16 +1,87 @@
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
-import { useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import Popup from "../reusable/Popup";
 import { supabase } from "../../api/supabaseClient";
+import { useNavigate, useParams } from "react-router-dom";
 
-export default function CreateBlog() {
-  const quillRef = useRef<ReactQuill>(null); // Reference to the editor
+export default function EditBlog() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const quillRef = useRef<ReactQuill>(null);
   const [content, setContent] = useState("");
   const [title, setTitle] = useState("");
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const baseURL = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    const fetchBlog = async () => {
+      const res = await fetch(`${baseURL}/my-blog/${id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setTitle(data.title);
+        setContent(data.content);
+        setPreview(data.thumbnail_src);
+      }
+    };
+    if (id) fetchBlog();
+  }, [id]);
+
+  const handleUpdate = async () => {
+    setIsSubmitting(true);
+    try {
+      let finalThumbnail = preview;
+
+      if (thumbnail) {
+        const fileExt = thumbnail.name.split(".").pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const { error } = await supabase.storage
+          .from("blog-thumbnails")
+          .upload(`thumbnails/${fileName}`, thumbnail);
+        if (error) throw error;
+        const { data } = supabase.storage
+          .from("blog-thumbnails")
+          .getPublicUrl(`thumbnails/${fileName}`);
+        finalThumbnail = data.publicUrl;
+      }
+
+      const updatedData = {
+        title,
+        content,
+        thumbnail_src: finalThumbnail,
+        short_description: content.substring(0, 100).replace(/<[^>]*>?/gm, ""),
+        linkhref: `/blog/${title.toLowerCase().replace(/\s+/g, "-")}`,
+      };
+
+      const resp = await fetch(`${baseURL}/my-blog/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (resp.ok) {
+        setPopupState({
+          isOpen: true,
+          type: "success",
+          title: "Updated",
+          message: "Blog updated!",
+        });
+        setTimeout(() => navigate("/my-blog"), 1500);
+      }
+    } catch (err: any) {
+        setPopupState({
+        isOpen: true,
+        type: "danger",
+        title: "Failed",
+        message: err.message || "Something went wrong.",
+      });
+    } finally {
+        setIsSubmitting(false);
+    }
+  };
 
   const [popupState, setPopupState] = useState({
     isOpen: false,
@@ -46,7 +117,11 @@ export default function CreateBlog() {
           const quill = quillRef.current?.getEditor();
           if (quill) {
             const range = quill.getSelection();
-            quill.insertEmbed(range ? range.index : 0, "image", urlData.publicUrl);
+            quill.insertEmbed(
+              range ? range.index : 0,
+              "image",
+              urlData.publicUrl,
+            );
           }
         } catch (err) {
           console.error("Image upload failed:", err);
@@ -55,95 +130,31 @@ export default function CreateBlog() {
     };
   };
 
-  const modules = useMemo(() => ({
-    toolbar: {
-      container: [
-        [{ header: [1, 2, false] }],
-        ["bold", "italic", "underline", "strike"],
-        [{ list: "ordered" }, { list: "bullet" }],
-        ["image", "link"],
-        ["clean"],
-      ],
-      handlers: {
-        image: imageHandler,
+  const modules = useMemo(
+    () => ({
+      toolbar: {
+        container: [
+          [{ header: [1, 2, false] }],
+          ["bold", "italic", "underline", "strike"],
+          [{ list: "ordered" }, { list: "bullet" }],
+          ["image", "link"],
+          ["clean"],
+        ],
+        handlers: {
+          image: imageHandler,
+        },
       },
-    },
-  }), []);
+    }),
+    [],
+  );
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (preview) URL.revokeObjectURL(preview);
+
       setThumbnail(file);
       setPreview(URL.createObjectURL(file));
-    }
-  };
-
-  const handlePublish = async () => {
-    if (!title || !content || !thumbnail) {
-      setPopupState({
-        isOpen: true,
-        type: "danger",
-        title: "Missing Info",
-        message: "Title, Content, and Thumbnail are all required!",
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const baseURL = import.meta.env.VITE_API_URL;
-      const fileExt = thumbnail?.name.split(".").pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `thumbnails/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("blog-thumbnails")
-        .upload(filePath, thumbnail);
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from("blog-thumbnails")
-        .getPublicUrl(filePath);
-
-      const blogData = {
-        title,
-        content,
-        short_description: content.substring(0, 100).replace(/<[^>]*>?/gm, ""),
-        linkhref: `/blog/${title.toLowerCase().replace(/\s+/g, "-")}`,
-        thumbnail_src: urlData.publicUrl,
-      };
-
-      const resp = await fetch(`${baseURL}/my-blog`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(blogData),
-      });
-
-      if (resp.ok) {
-        setPopupState({
-          isOpen: true,
-          type: "success",
-          title: "Published",
-          message: "Blog posted successfully!",
-        });
-        setTitle("");
-        setContent("");
-        setThumbnail(null);
-        setPreview(null);
-      } else {
-        throw new Error("Failed to publish");
-      }
-    } catch (err: any) {
-      setPopupState({
-        isOpen: true,
-        type: "danger",
-        title: "Failed",
-        message: err.message || "Something went wrong.",
-      });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -156,6 +167,7 @@ export default function CreateBlog() {
       </h1>
       <input
         className="px-4 py-2 bg-white/20 border rounded-md text-white w-full border-accent focus:border-accent-secondary outline-none"
+        value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Write the title here..."
         type="text"
@@ -209,7 +221,7 @@ export default function CreateBlog() {
       </div>
 
       <button
-        onClick={handlePublish}
+        onClick={handleUpdate}
         disabled={isSubmitting}
         className={`mt-20 w-full text-center py-2 rounded-md font-bold mb-10 transition-all ${
           isSubmitting
@@ -217,7 +229,7 @@ export default function CreateBlog() {
             : "bg-accent cursor-pointer hover:bg-accent-secondary text-bg hover:text-white"
         }`}
       >
-        {isSubmitting ? "Publishing..." : "Publish"}
+        {isSubmitting ? "Updating..." : "Update Post"}
       </button>
       <Popup
         isOpen={popupState.isOpen}

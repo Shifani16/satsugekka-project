@@ -1,21 +1,25 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import BlogCard from "./reusable/BlogCard";
 import { motion } from "framer-motion";
+import Pagination from "./reusable/Pagination";
 
 export interface BlogEntry {
-  content: ReactNode;
+  content: string;
   post_id: number;
   title: string;
   short_description: string;
   thumbnail_src: string;
   linkhref: string;
-  updated_at:string;
+  updated_at: string;
 }
 
 export default function Blog() {
   const [blogs, setBlogs] = useState<BlogEntry[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 5;
 
   useEffect(() => {
     console.log("Starting fetch...");
@@ -34,7 +38,7 @@ export default function Blog() {
         setIsLoading(false);
       })
       .catch((err) => {
-        console.error("FETCH FAILED:", err); 
+        console.error("FETCH FAILED:", err);
         setIsLoading(false);
       });
   }, []);
@@ -45,10 +49,19 @@ export default function Blog() {
       blog.short_description?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
   console.log("Current Blogs State:", blogs);
 
+  const totalPages = Math.ceil(filteredBlogs.length / postsPerPage);
+  const indexOfLast = currentPage * postsPerPage;
+  const indexOfFirst = indexOfLast - postsPerPage;
+  const currentItems = filteredBlogs.slice(indexOfFirst, indexOfLast);
+
   return (
-    <section className="px-15 py-5 min-h-screen">
+    <section className="px-15 py-5 min-h-screen ">
       <div className="flex flex-row gap-10 relative">
         <motion.img
           initial={{ opacity: 0, y: -50 }}
@@ -76,15 +89,33 @@ export default function Blog() {
 
       <div className="flex flex-col gap-5 mt-10">
         {isLoading ? (
-          <p className="text-white font-plex">Loading your stories...</p>
-        ) : filteredBlogs.length > 0 ? (
-          filteredBlogs.map((item) => <BlogCard key={item.post_id} {...item} />)
+          <div className="py-20 text-center">
+            <p className="text-white font-plex animate-pulse">
+              Fetching blogs...
+            </p>
+          </div>
+        ) : currentItems.length > 0 ? (
+          currentItems.map((item) => <BlogCard key={item.post_id} {...item} />)
         ) : (
-          <p className="text-gray-400 font-plex">
-            No blogs found matching "{searchTerm}"
-          </p>
+          <div className="py-20 text-center">
+            <p className="text-gray-400 font-plex">
+              {searchTerm 
+                ? `No translations found matching "${searchTerm}"` 
+                : "No posts found."}
+            </p>
+          </div>
         )}
       </div>
+
+      {!isLoading && totalPages > 1 && (
+        <div className="flex items-center justify-center mt-20 mb-10">
+          <Pagination
+            currentPages={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
+        </div>
+      )}
     </section>
   );
 }
