@@ -318,3 +318,4 @@ app.post("/login", async (req: Request, res: Response) => {
   res.json({ success: true, message: "Welcome" });
 });
 
+export default app;
