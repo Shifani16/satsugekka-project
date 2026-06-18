@@ -3,10 +3,11 @@ import type { BlogEntry } from "../blog";
 
 type BlogCardProps = Pick<
   BlogEntry,
-  "title" | "short_description" | "thumbnail_src" | "linkhref"
+  "post_id" | "title" | "short_description" | "thumbnail_src" | "linkhref"
 >;
 
 const BlogCard: React.FC<BlogCardProps> = ({
+  post_id,
   title,
   short_description,
   thumbnail_src,
@@ -23,7 +24,7 @@ const BlogCard: React.FC<BlogCardProps> = ({
         
         <a
           rel="noopener noreferrer"
-          href={linkhref}
+          href={`/blog/${post_id}`}
           className="flex text-sm hover:bg-accent hover:text-bg transition-all duration-300 hover:translate-x-1 shadow-lg font-plex font-semibold w-32 items-center justify-center h-8 text-white bg-accent-secondary rounded-xl mt-6"
         >
           Read More
