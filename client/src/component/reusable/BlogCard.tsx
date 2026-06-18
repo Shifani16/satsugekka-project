@@ -1,5 +1,6 @@
 import type React from "react";
 import type { BlogEntry } from "../blog";
+import { playClickSound } from "../../utils/playClickSound";
 
 type BlogCardProps = Pick<
   BlogEntry,
@@ -25,6 +26,7 @@ const BlogCard: React.FC<BlogCardProps> = ({
         <a
           rel="noopener noreferrer"
           href={`/blog/${post_id}`}
+          onClick={() => { playClickSound() }}
           className="flex text-sm hover:bg-accent hover:text-bg transition-all duration-300 hover:translate-x-1 shadow-lg font-plex font-semibold w-32 items-center justify-center h-8 text-white bg-accent-secondary rounded-xl mt-6"
         >
           Read More
@@ -32,7 +34,7 @@ const BlogCard: React.FC<BlogCardProps> = ({
         </a>
       </div>
 
-      <div className="flex justify-center md:justify-end">
+      <div className="md:flex hidden justify-center md:justify-end">
         <img
           src={thumbnail_src || "https://via.placeholder.com/400"}
           alt={title}

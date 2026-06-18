@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import type { BlogEntry } from "../blog";
 import { motion } from "framer-motion";
+import { playClickSound } from "../../utils/playClickSound";
 
 export default function BlogPostDetail() {
   const params = useParams();
@@ -89,6 +90,7 @@ export default function BlogPostDetail() {
           <Link
             className="px-4 py-2 w-1/2 border border-accent-secondary opacity-70 rounded-md transition-all duration-300 hover:scale-102 hover:opacity-100 flex items-center justify-between"
             to={`/my-blog/${prevPost.post_id}`}
+            onClick={() => { playClickSound() }}
           >
             <i className="fa-solid fa-arrow-left text-white mr-4"></i>
             <div className="text-right flex-1">
@@ -104,6 +106,7 @@ export default function BlogPostDetail() {
           <Link
             className="px-4 py-2 w-1/2 border border-accent-secondary opacity-70 rounded-md text-right transition-all duration-300 hover:scale-102 hover:opacity-100 flex items-center justify-between"
             to={`/my-blog/${nextPost.post_id}`}
+            onClick={() => { playClickSound() }}
           >
             <div className="text-left flex-1">
               <span className="text-[10px] block opacity-50 uppercase">Next Up</span>

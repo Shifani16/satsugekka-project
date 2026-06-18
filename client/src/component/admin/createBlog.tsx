@@ -187,7 +187,7 @@ export default function CreateBlog() {
         </div>
       )}
 
-      <div className="flex flex-row w-1/4">
+      <div className="flex flex-row w-1/2 md:w-1/4 text-sm md:text-md">
         <label className="py-1 w-full mr-2 bg-accent-secondary text-center rounded-md text-white font-semibold hover:bg-accent cursor-pointer hover:text-bg">
           Upload
           <input

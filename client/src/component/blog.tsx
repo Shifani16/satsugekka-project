@@ -61,7 +61,7 @@ export default function Blog() {
   const currentItems = filteredBlogs.slice(indexOfFirst, indexOfLast);
 
   return (
-    <section className="px-15 py-5 min-h-screen ">
+    <section className="md:px-15 px-10 py-3 md:py-5 min-h-screen ">
       <div className="flex flex-row gap-10 relative">
         <motion.img
           initial={{ opacity: 0, y: -50 }}
@@ -69,10 +69,10 @@ export default function Blog() {
           transition={{ duration: 1, ease: "easeOut" }}
           src="img/flower-blog.png"
           alt="decor"
-          className="absolute -z-10 right-0 w-xs"
+          className="absolute -z-10 right-0 w-45 top-10 md:w-xs"
         />
-        <h1 className="font-plex text-accent text-6xl font-bold">Blog</h1>
-        <h1 className="font-plex text-6xl font-bold text-transparent opacity-50 [-webkit-text-stroke:1px_var(--color-accent)]">
+        <h1 className="font-plex text-accent text-3xl md:text-6xl font-bold">Blog</h1>
+        <h1 className="font-plex text-3xl md:text-6xl font-bold text-transparent opacity-50 [-webkit-text-stroke:1px_var(--color-accent)]">
           ブログ
         </h1>
       </div>

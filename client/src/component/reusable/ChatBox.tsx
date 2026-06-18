@@ -58,6 +58,17 @@ export default function ChatBox() {
         />
       </div>
       {lines.map((line, index) => {
+        const noteMatch = line.match(/^\/\/\s*(.*)/);
+
+        if (noteMatch) {
+          const noteText = noteMatch[1].trim();
+          return (
+            <div key={index} className="w-full text-left my-1 mt-10 md:mt-20 items-end">
+              <p className="font-plex text-primary font-bold italic text-sm">{noteText}</p>
+            </div>
+          )
+        }
+        
         const specialMatch = line.match(/^\*(.*)\*$/);
 
         if (specialMatch) {
@@ -72,6 +83,8 @@ export default function ChatBox() {
             </div>
           );
         }
+
+        
 
         const match = line.match(/^([^:]*):\s*(.*)/);
 

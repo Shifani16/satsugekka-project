@@ -204,7 +204,7 @@ export default function Setting() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          char_id: newChar.char_id,
+          char_id: newChar.char_id.trim(),
           char_name: newChar.char_name,
           char_img: publicUrl,
         }),
@@ -219,7 +219,7 @@ export default function Setting() {
           message: "Character added successfully!",
         });
         setCharacters((prev) => [...prev, addedChar]);
-        setNewChar({ char_id: " ", char_name: "" });
+        setNewChar({ char_id: "", char_name: "" });
         setImageFile(null);
         setPreviewUrl(null);
       }
@@ -241,43 +241,54 @@ export default function Setting() {
   );
 
   useEffect(() => {
-    console.log("Starting fetch...");
     fetchCharacters();
   }, []);
 
-  console.log("State", characters);
-
   return (
-    <section className="font-plex">
-      <h1 className="text-white text-5xl font-bold">Setting</h1>
+    <section className="font-plex max-w-5xl mx-auto px-2 sm:px-4">
+      {/* Title Adjustments */}
+      <h1 className="text-white text-3xl sm:text-5xl font-bold">Setting</h1>
 
-      <h1 className="mt-10 font-plex text-accent text-xl font-bold mb-3">
+      <h1 className="md:mt-8 mt-2 font-plex text-accent text-lg sm:text-xl font-bold mb-4">
         Character Making
       </h1>
 
-      <div className="flex items-center gap-4">
-        <label className="w-24 h-24 bg-gray-300 rounded-2xl flex items-center justify-center cursor-pointer hover:bg-gray-400 transition-all overflow-hidden border-2 border-dashed border-accent/50 relative">
-          {previewUrl ? (
-            <img
-              src={previewUrl}
-              className="w-full h-full object-cover"
-              alt="Preview"
+      {/* --- FORM SECTION --- */}
+      {/* Stack vertically on mobile, row on desktop */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/5 sm:bg-transparent p-4 sm:p-0 rounded-xl">
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <label className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-300 rounded-2xl flex items-center justify-center cursor-pointer hover:bg-gray-400 transition-all overflow-hidden border-2 border-dashed border-accent/50 shrink-0 relative">
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                className="w-full h-full object-cover"
+                alt="Preview"
+              />
+            ) : (
+              <i className="fa-solid fa-plus text-2xl sm:text-3xl text-bg-dark"></i>
+            )}
+
+            <input
+              type="file"
+              className="hidden"
+              accept="image/*"
+              onChange={handleImageChange}
             />
-          ) : (
-            <i className="fa-solid fa-plus text-3xl text-bg-dark"></i>
-          )}
+          </label>
+          
+          {/* Mobile Submit Button inside the inner row wrapper */}
+          <button
+            onClick={handleAddCharacter}
+            className="sm:hidden ml-auto cursor-pointer w-14 h-14 bg-accent rounded-xl flex items-center justify-center hover:bg-accent/80 transition-all shrink-0"
+          >
+            <i className="fa-solid fa-plus text-xl text-bg-dark"></i>
+          </button>
+        </div>
 
+        {/* Inputs take full width on mobile */}
+        <div className="flex flex-col gap-3 w-full sm:flex-1 max-w-xl">
           <input
-            type="file"
-            className="hidden"
-            accept="image/*"
-            onChange={handleImageChange}
-          />
-        </label>
-
-        <div className="flex flex-col gap-3 w-1/2">
-          <input
-            className="bg-white/5 w-1/2 text-white border border-accent py-2 rounded-md px-2"
+            className="bg-white/5 sm:bg-white/5 w-full sm:w-1/2 text-white border border-accent py-2 rounded-md px-2 text-sm sm:text-base"
             placeholder="Character ID"
             value={newChar.char_id}
             onChange={(e) =>
@@ -285,7 +296,7 @@ export default function Setting() {
             }
           />
           <input
-            className="bg-white/5 w-3/4 text-white border border-accent py-2 rounded-md px-2"
+            className="bg-white/5 sm:bg-white/5 w-full sm:w-3/4 text-white border border-accent py-2 rounded-md px-2 text-sm sm:text-base"
             placeholder="Display Name"
             value={newChar.char_name}
             onChange={(e) =>
@@ -294,68 +305,76 @@ export default function Setting() {
           />
         </div>
 
-        {/* add button */}
+        {/* Desktop Submit Button */}
         <button
           onClick={handleAddCharacter}
-          className="cursor-pointer w-14 h-14 bg-accent rounded-md flex items-center justify-center hover:bg-accent/80 transition-all"
+          className="hidden sm:flex cursor-pointer w-14 h-14 bg-accent rounded-md items-center justify-center hover:bg-accent/80 transition-all shrink-0"
         >
           <i className="fa-solid fa-plus text-2xl text-bg-dark"></i>
         </button>
       </div>
 
+      {/* --- SEARCH BAR --- */}
       <div>
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search by ID or Name"
-          className="mt-10 text-white border border-accent px-2 py-2 rounded-md bg-white/5 w-1/4"
+          className="mt-8 text-white border border-accent px-3 py-2 rounded-md bg-white/5 w-full sm:w-1/2 md:w-1/4 text-sm sm:text-base"
         />
       </div>
 
-      <div className="mt-10 flex flex-col gap-6">
+      {/* --- CHARACTER LIST --- */}
+      <div className="mt-8 flex flex-col gap-4">
         {isLoading ? (
           <p className="text-white">Loading...</p>
         ) : filteredChars.length > 0 ? (
           filteredChars.map((char) => (
-            <div key={char.id} className="flex gap-2 w-3/4 items-center">
-              <img
-                src={char.char_img || "img/oshi/default.png"}
-                className="w-16 h-16 object-cover rounded-full shrink-0 aspect-square"
-                alt={char.char_name}
-              />
-              <div className="opacity-90 bg-primary border w-1/2 border-accent-secondary px-4 py-2 rounded-2xl rounded-tl-none">
-                <h1 className="font-plex text-accent-secondary font-bold text-sm">
-                  {char.char_name}
-                </h1>
-                <p className="font-plex font-semibold text-xs text-bg opacity-70">
-                  ID: {char.char_id}
-                </p>
+            <div key={char.id} className="flex gap-3 w-full md:w-3/4 items-center justify-between sm:justify-start">
+              <div className="flex gap-3 items-center flex-1 min-w-0">
+                <img
+                  src={char.char_img || "img/oshi/default.png"}
+                  className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-full shrink-0 aspect-square"
+                  alt={char.char_name}
+                />
+                {/* Bubble Container expands fluidly */}
+                <div className="opacity-90 bg-primary border flex-1 border-accent-secondary px-3 py-2 sm:px-4 rounded-2xl rounded-tl-none min-w-0">
+                  <h1 className="font-plex text-accent-secondary font-bold text-xs sm:text-sm truncate">
+                    {char.char_name}
+                  </h1>
+                  <p className="font-plex font-semibold text-[10px] sm:text-xs text-bg opacity-70 truncate">
+                    ID: {char.char_id}
+                  </p>
+                </div>
               </div>
-              <div className="flex flex-row items-center gap-6 ml-10">
+
+              {/* Action Icons spacing compressed slightly on small viewports */}
+              <div className="flex flex-row items-center gap-4 sm:gap-6 ml-3 sm:ml-10 shrink-0">
                 <i
                   onClick={() => {
                     setSelectedId(char.id);
                     setEditingChar(char);
                     setShowEditPopup(true);
                   }}
-                  className="fa-regular fa-pen-to-square text-primary text-2xl hover:text-accent-secondary cursor-pointer"
+                  className="fa-regular fa-pen-to-square text-primary text-xl sm:text-2xl hover:text-accent-secondary cursor-pointer"
                 ></i>
                 <i
                   onClick={() => {
                     setSelectedId(char.id);
                     setDeleteOpen(true);
                   }}
-                  className="fa-solid fa-trash text-2xl text-primary hover:text-accent-secondary cursor-pointer"
+                  className="fa-solid fa-trash text-xl sm:text-2xl text-primary hover:text-accent-secondary cursor-pointer"
                 ></i>
               </div>
             </div>
           ))
         ) : (
-          <p className="text-gray-500 italic">No characters found.</p>
+          <p className="text-gray-500 italic text-sm">No characters found.</p>
         )}
       </div>
 
+      {/* Popups */}
       <PopupChar
         isOpen={showEditPopup}
         onClose={() => setShowEditPopup(false)}
@@ -371,7 +390,7 @@ export default function Setting() {
         onConfirm={handleDelete}
         type="confirm"
       >
-        <p className="text-lg">
+        <p className="text-base sm:text-lg">
           Are you sure you want to delete this character?
         </p>
       </Popup>
@@ -383,7 +402,7 @@ export default function Setting() {
         title={statusPopup.title}
         type={statusPopup.type}
       >
-        <p className="text-lg">{statusPopup.message}</p>
+        <p className="text-base sm:text-lg">{statusPopup.message}</p>
       </Popup>
     </section>
   );
