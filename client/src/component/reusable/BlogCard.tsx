@@ -12,7 +12,6 @@ const BlogCard: React.FC<BlogCardProps> = ({
   title,
   short_description,
   thumbnail_src,
-  linkhref,
 }) => {
   return (
     <div className="relative grid grid-cols-1 md:grid-cols-2 items-center transition-all duration-300 hover:scale-[1.01] gap-10 py-6">
