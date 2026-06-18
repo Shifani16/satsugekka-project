@@ -102,7 +102,7 @@ export default function CreateTrans() {
 
   return (
     <section className="font-plex max-w-4xl">
-      <h1 className="text-white text-5xl font-bold mb-8">Create New</h1>
+      <h1 className="text-white text-3xl md:text-5xl font-bold mb-8">Create New</h1>
 
       <h1 className="font-plex text-accent text-xl font-bold mb-3">Title</h1>
       <input

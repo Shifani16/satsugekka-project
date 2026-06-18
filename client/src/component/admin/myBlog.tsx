@@ -69,19 +69,19 @@ export default function MyBlog() {
 
   return (
     <section className="font-plex">
-      <h1 className="text-white text-5xl font-bold">My Blog</h1>
+      <h1 className="text-white text-3xl md:text-5xl font-bold">My Blog</h1>
 
       <div className="mt-10 overflow-x-auto">
         <table className="w-full">
           <thead className="border-b border-white">
             <tr className="">
-              <th className="mt-5 py-3 text-left text-accent font-bold">
+              <th className="mt-5 text-left text-sm md:text-lg text-accent font-bold w-1/3 md:w-auto">
                 Title
               </th>
-              <th className="py-3 text-left text-accent font-bold">
+              <th className="py-3 text-left text-sm md:text-lg text-accent font-bold w-1/3 md:w-auto">
                 Uploaded Date
               </th>
-              <th className="py-3 text-left text-accent font-bold"></th>
+              <th className="py-3 text-right text-accent font-bold w-1/4 md:w-auto"></th>
             </tr>
           </thead>
           <tbody>
@@ -89,7 +89,7 @@ export default function MyBlog() {
               currentBlogs.map((blog) => (
                 <tr
                   key={blog.post_id}
-                  className="text-primary shadow-bg border-b border-bg-dark hover:text-white"
+                  className="text-sm md:text-md text-primary shadow-bg border-b border-bg-dark hover:text-white"
                 >
                   <td className="">{blog.title}</td>
 
@@ -105,7 +105,7 @@ export default function MyBlog() {
                     <td>
                       <i
                         onClick={() => navigate(`/edit-blog/${blog.post_id}`)}
-                        className="fa-regular fa-pen-to-square text-xl hover:text-accent-secondary cursor-pointer"
+                        className="fa-regular fa-pen-to-square text-sm md:text-xl hover:text-accent-secondary cursor-pointer"
                       ></i>
                     </td>
                     <td>
@@ -114,13 +114,13 @@ export default function MyBlog() {
                           setSelectedId(blog.post_id);
                           setIsDeleteOpen(true);
                         }}
-                        className="fa-solid fa-trash text-xl hover:text-accent-secondary cursor-pointer"
+                        className="fa-solid fa-trash text-sm md:text-xl hover:text-accent-secondary cursor-pointer"
                       ></i>
                     </td>
                     <td>
                       <i
                         onClick={() => window.open(blog.linkhref, "_blank")}
-                        className="fa-solid fa-arrow-right rotate-315 text-2xl hover:text-accent-secondary cursor-pointer"
+                        className="fa-solid fa-arrow-right rotate-315 text-md md:text-2xl hover:text-accent-secondary cursor-pointer"
                       ></i>
                     </td>
                   </div>

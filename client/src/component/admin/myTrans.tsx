@@ -99,19 +99,21 @@ export default function MyTrans() {
 
   return (
     <section className="font-plex">
-      <h1 className="text-white text-5xl font-bold">My Translation</h1>
+      <h1 className="text-white text-3xl md:text-5xl font-bold">
+        My Translation
+      </h1>
 
       <div className="mt-10 overflow-x-auto">
         <table className="w-full">
           <thead className="border-b border-white">
             <tr className="">
-              <th className="mt-5 py-3 text-left text-accent font-bold">
+              <th className="mt-5 text-left text-sm md:text-lg text-accent font-bold w-1/3 md:w-auto">
                 Title
               </th>
-              <th className="py-3 text-left text-accent font-bold">
+              <th className="py-3 text-left text-sm md:text-lg text-accent font-bold w-1/3 md:w-auto">
                 Uploaded Date
               </th>
-              <th className="py-3 text-left text-accent font-bold"></th>
+              <th className="py-3 text-right text-accent font-bold w-1/4 md:w-auto"></th>
             </tr>
           </thead>
           <tbody>
@@ -119,7 +121,7 @@ export default function MyTrans() {
               currentTrans.map((translation) => (
                 <tr
                   key={translation.translation_id}
-                  className="text-primary shadow-bg border-b border-bg-dark hover:text-white"
+                  className="text-sm md:text-md text-primary shadow-bg border-b border-bg-dark hover:text-white"
                 >
                   <td className="py-3">{translation.title}</td>
                   <td className="py-3">
@@ -143,20 +145,20 @@ export default function MyTrans() {
                           );
                           navigate(`/edit-translation/${cleanSlug}`);
                         }}
-                        className="fa-regular fa-pen-to-square text-xl hover:text-accent-secondary cursor-pointer"
+                        className="fa-regular fa-pen-to-square text-sm md:text-xl hover:text-accent-secondary cursor-pointer"
                       ></i>
                       <i
                         onClick={() => {
                           setSelectedId(translation.translation_id);
                           setIsDeleteOpen(true);
                         }}
-                        className="fa-solid fa-trash text-xl hover:text-accent-secondary cursor-pointer"
+                        className="fa-solid fa-trash text-sm md:text-xl hover:text-accent-secondary cursor-pointer"
                       ></i>
                       <i
                         onClick={() =>
                           window.open(translation.linkhref, "_blank")
                         }
-                        className="fa-solid fa-arrow-right rotate-315 text-2xl hover:text-accent-secondary cursor-pointer"
+                        className="fa-solid fa-arrow-right rotate-315 text-md md:text-2xl hover:text-accent-secondary cursor-pointer"
                       ></i>
                     </div>
                   </td>

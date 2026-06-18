@@ -42,7 +42,6 @@ export default function CreateBlog() {
             .from("blog-thumbnails")
             .getPublicUrl(filePath);
 
-          // Get the editor instance correctly
           const quill = quillRef.current?.getEditor();
           if (quill) {
             const range = quill.getSelection();
@@ -149,7 +148,7 @@ export default function CreateBlog() {
 
   return (
     <section className="font-plex max-w-4xl">
-      <h1 className="text-white text-5xl font-bold mb-8">New Post</h1>
+      <h1 className="text-white text-3xl md:text-5xl font-bold mb-8">New Post</h1>
 
       <h1 className="font-plex text-accent text-xl font-bold mb-3">
         Blog Title
