@@ -15,7 +15,7 @@ export default function Login() {
     const baseUrl = import.meta.env.VITE_API_URL
 
     try {
-      const res = await fetch(`${baseUrl}/api/login`, {
+      const res = await fetch(`${baseUrl}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
