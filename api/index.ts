@@ -12,7 +12,14 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Local server running on port ${PORT}`));
 
-app.use(cors({ origin: '*' }));
+app.use(cors({ 
+  origin: [
+    'https://satsugekka-project.vercel.app',
+    'http://localhost:5173'                 
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
 app.use(express.json());
 
 const pool = new Pool({
