@@ -7,10 +7,22 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
+# Dependencies (Blocks node_modules everywhere)
+node_modules/
+**/node_modules/
+
+# Production Build Artifacts (Blocks dist everywhere)
+dist/
+**/dist/
 dist-ssr
 *.local
+
+# Environment Files (Crucial Security Fix!)
+.env
+.env.*
+api/.env
+client/.env
+client/.env.local
 
 # Editor directories and files
 .vscode/*
