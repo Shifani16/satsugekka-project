@@ -246,15 +246,12 @@ export default function Setting() {
 
   return (
     <section className="font-plex max-w-5xl mx-auto px-2 sm:px-4">
-      {/* Title Adjustments */}
-      <h1 className="text-white text-3xl sm:text-5xl font-bold">Setting</h1>
+      <h1 className="text-white text-3xl md:text-5xl font-bold">Setting</h1>
 
       <h1 className="md:mt-8 mt-2 font-plex text-accent text-lg sm:text-xl font-bold mb-4">
         Character Making
       </h1>
 
-      {/* --- FORM SECTION --- */}
-      {/* Stack vertically on mobile, row on desktop */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/5 sm:bg-transparent p-4 sm:p-0 rounded-xl">
         <div className="flex items-center gap-4 w-full sm:w-auto">
           <label className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-300 rounded-2xl flex items-center justify-center cursor-pointer hover:bg-gray-400 transition-all overflow-hidden border-2 border-dashed border-accent/50 shrink-0 relative">
@@ -276,7 +273,6 @@ export default function Setting() {
             />
           </label>
           
-          {/* Mobile Submit Button inside the inner row wrapper */}
           <button
             onClick={handleAddCharacter}
             className="sm:hidden ml-auto cursor-pointer w-14 h-14 bg-accent rounded-xl flex items-center justify-center hover:bg-accent/80 transition-all shrink-0"
@@ -285,7 +281,6 @@ export default function Setting() {
           </button>
         </div>
 
-        {/* Inputs take full width on mobile */}
         <div className="flex flex-col gap-3 w-full sm:flex-1 max-w-xl">
           <input
             className="bg-white/5 sm:bg-white/5 w-full sm:w-1/2 text-white border border-accent py-2 rounded-md px-2 text-sm sm:text-base"
@@ -305,7 +300,6 @@ export default function Setting() {
           />
         </div>
 
-        {/* Desktop Submit Button */}
         <button
           onClick={handleAddCharacter}
           className="hidden sm:flex cursor-pointer w-14 h-14 bg-accent rounded-md items-center justify-center hover:bg-accent/80 transition-all shrink-0"
@@ -314,7 +308,6 @@ export default function Setting() {
         </button>
       </div>
 
-      {/* --- SEARCH BAR --- */}
       <div>
         <input
           type="text"
@@ -325,7 +318,6 @@ export default function Setting() {
         />
       </div>
 
-      {/* --- CHARACTER LIST --- */}
       <div className="mt-8 flex flex-col gap-4">
         {isLoading ? (
           <p className="text-white">Loading...</p>
@@ -338,7 +330,6 @@ export default function Setting() {
                   className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-full shrink-0 aspect-square"
                   alt={char.char_name}
                 />
-                {/* Bubble Container expands fluidly */}
                 <div className="opacity-90 bg-primary border flex-1 border-accent-secondary px-3 py-2 sm:px-4 rounded-2xl rounded-tl-none min-w-0">
                   <h1 className="font-plex text-accent-secondary font-bold text-xs sm:text-sm truncate">
                     {char.char_name}
@@ -349,7 +340,6 @@ export default function Setting() {
                 </div>
               </div>
 
-              {/* Action Icons spacing compressed slightly on small viewports */}
               <div className="flex flex-row items-center gap-4 sm:gap-6 ml-3 sm:ml-10 shrink-0">
                 <i
                   onClick={() => {
@@ -374,7 +364,6 @@ export default function Setting() {
         )}
       </div>
 
-      {/* Popups */}
       <PopupChar
         isOpen={showEditPopup}
         onClose={() => setShowEditPopup(false)}
