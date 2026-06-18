@@ -8,7 +8,11 @@ import { createClient } from "@supabase/supabase-js";
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 5000;
+
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => console.log(`Local server running on port ${PORT}`));
+}
 
 app.use(cors({ origin: '*' }));
 app.use(express.json());
@@ -292,7 +296,7 @@ app.put("/my-blog/:id", async (req: Request, res: Response) => {
   }
 });
 
-app.post("/api/login", async (req: Request, res: Response) => {
+app.post("/login", async (req: Request, res: Response) => {
   const { username, password } = req.body;
 
   console.log(`Login attempt: ${username} with password: ${password}`);
@@ -314,6 +318,3 @@ app.post("/api/login", async (req: Request, res: Response) => {
   res.json({ success: true, message: "Welcome" });
 });
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
-});
