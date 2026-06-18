@@ -19,7 +19,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className={`z-10 sticky top-0 flex items-center justify-center ${showBorder ? 'shadow-md ' : 'shadow-none'}`}>
+    <nav className={`z-10 top-0 flex items-center justify-center ${showBorder ? 'shadow-md ' : 'shadow-none'}`}>
       <div className="grid grid-cols-3 w-full mt-4 ml-4">
         <a href="#">
           <img className="w-20" src="/satsugekka-logo.svg" alt="logo-home" />

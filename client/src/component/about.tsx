@@ -38,6 +38,7 @@ export default function About() {
     { src: "img/oshi/suzu.png", name: "Orimaki Suzu" },
     { src: "img/oshi/kisa.png", name: "Tachibana Kisa" },
     { src: "img/oshi/yuta.png", name: "Okkotsu Yuta" },
+    { src: "img/oshi/kadoc.png", name: "Kadoc Zemlupus" },
   ];
 
   const games = [
