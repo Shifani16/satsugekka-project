@@ -37,7 +37,7 @@ function AppContent({ showIntro }: { showIntro: boolean }) {
   const showSidebar = isExcludedPage && location.pathname !== "/vani";
 
   return (
-    <div className={showSidebar ? "flex min-h-screen" : ""}>
+    <div className={showSidebar ? "flex flex-col md:flex-row min-h-screen" : ""}>
       {showIntro && !isExcludedPage && <Intro />}
 
       {showSidebar ? <Sidebar /> : !isExcludedPage && <Navbar />}

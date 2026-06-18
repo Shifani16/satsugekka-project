@@ -1,4 +1,4 @@
-import { useEffect, useState  } from "react";
+import { useEffect, useState } from "react";
 import TranslationCard from "./reusable/TranslationCard";
 import { motion } from "framer-motion";
 import Pagination from "./reusable/Pagination";
@@ -45,7 +45,7 @@ export default function Translation() {
       translation.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       translation.short_description
         ?.toLowerCase()
-        .includes(searchTerm.toLowerCase())
+        .includes(searchTerm.toLowerCase()),
   );
 
   useEffect(() => {
@@ -58,7 +58,7 @@ export default function Translation() {
   const currentItems = filteredPosts.slice(indexOfFirst, indexOfLast);
 
   return (
-    <section className="px-15 py-5 h-full relative">
+    <section className="md:px-15 px-10 py-3 md:py-5 min-h-screen relative">
       <motion.img
         initial={{ opacity: 0, y: -50 }}
         whileInView={{ opacity: 1, y: 5 }}
@@ -66,32 +66,32 @@ export default function Translation() {
         viewport={{ once: false, margin: "-50px" }}
         src="img/flower-trans.png"
         alt=""
-        className="absolute -z-10 right-0 w-64"
+        className="absolute -z-10 right-0 w-32 md:w-64"
       />
 
-      <div className="flex flex-row gap-10">
-        <h1 className="font-plex text-accent text-6xl font-bold">
+      <div className="flex md:flex-row flex-col md:gap-10 gap-5">
+        <h1 className="font-plex text-accent text-4xl md:text-6xl font-bold">
           Translation
         </h1>
-        <h1 className="font-plex text-6xl font-bold text-transparent opacity-50 [-webkit-text-stroke:1px_var(--color-accent)]">
+        <h1 className="font-plex text-4xl md:text-6xl font-bold text-transparent opacity-50 [-webkit-text-stroke:1px_var(--color-accent)]">
           翻 訳
         </h1>
       </div>
 
-      <div className="relative mt-10 flex items-center bg-white/10 border border-accent rounded-3xl px-4 py-3 shadow-2xl w-1/3">
+      <div className="relative mt-8 md:mt-10 flex items-center bg-white/10 border border-accent rounded-2xl md:rounded-3xl px-4 py-2.5 md:py-3 shadow-2xl w-full sm:max-w-md md:max-w-lg">
         <input
           type="text"
           placeholder="Search by title or keyword..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="font-plex text-white w-full bg-transparent outline-none"
+          className="font-plex text-white text-sm md:text-base w-full bg-transparent outline-none placeholder:text-white/40"
         />
         {searchTerm && (
-          <button 
+          <button
             onClick={() => setSearchTerm("")}
-            className="text-accent hover:text-white ml-2"
+            className="text-accent hover:text-white ml-2 transition-colors duration-200"
           >
-            <i className="fa-solid fa-xmark"></i>
+            <i className="fa-solid fa-xmark text-sm md:text-base"></i>
           </button>
         )}
       </div>
@@ -99,7 +99,9 @@ export default function Translation() {
       <div className="flex flex-col gap-5 mt-10">
         {isLoading ? (
           <div className="py-20 text-center">
-            <p className="text-white font-plex animate-pulse">Fetching posts...</p>
+            <p className="text-white font-plex animate-pulse">
+              Fetching posts...
+            </p>
           </div>
         ) : currentItems.length > 0 ? (
           currentItems.map((item) => (
@@ -108,8 +110,8 @@ export default function Translation() {
         ) : (
           <div className="py-20 text-center">
             <p className="text-gray-400 font-plex">
-              {searchTerm 
-                ? `No translations found matching "${searchTerm}"` 
+              {searchTerm
+                ? `No translations found matching "${searchTerm}"`
                 : "No posts found."}
             </p>
           </div>
