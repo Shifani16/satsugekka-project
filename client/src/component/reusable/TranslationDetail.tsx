@@ -52,15 +52,16 @@ export default function TranslationDetail() {
         <ChatBox />
       </div>
 
-      <div className="mt-30 flex flex-row text-primary gap-10 mb-30">
+      {/* Pagination */}
+      <div className="mt-16 md:mt-30 flex flex-col md:flex-row text-primary gap-4 md:gap-10 mb-16 md:mb-30">
         {prevPost ? (
           <Link
-            className="px-4 py-2 w-1/2 border border-accent-secondary opacity-70 rounded-md transition-all duration-300 hover:scale-102 hover:opacity-100 flex items-center justify-between"
+            className="px-4 py-3 w-full md:w-1/2 border border-accent-secondary opacity-70 rounded-md transition-all duration-300 hover:scale-102 hover:opacity-100 flex items-center justify-between"
             to={prevPost.linkhref}
             onClick={() => { playClickSound() }}
           >
             <i className="fa-solid fa-arrow-left text-white mr-4"></i>
-            <div className="text-right flex-1">
+            <div className="text-right flex-1 min-w-0">
               <span className="text-[10px] block opacity-50 uppercase">
                 Previous
               </span>
@@ -68,16 +69,16 @@ export default function TranslationDetail() {
             </div>
           </Link>
         ) : (
-          <div className="w-1/2 opacity-20 border border-dashed border-accent-secondary rounded-md px-4 py-2 flex items-center italic text-xs"></div>
+          <div className="hidden md:flex w-1/2 opacity-20 border border-dashed border-accent-secondary rounded-md px-4 py-2 items-center italic text-xs"></div>
         )}
 
         {nextPost ? (
           <Link
-            className="px-4 py-2 w-1/2 border border-accent-secondary opacity-70 rounded-md text-right transition-all duration-300 hover:scale-102 hover:opacity-100 flex items-center justify-between"
+            className="px-4 py-3 w-full md:w-1/2 border border-accent-secondary opacity-70 rounded-md text-right transition-all duration-300 hover:scale-102 hover:opacity-100 flex items-center justify-between"
             to={nextPost.linkhref}
             onClick={() => { playClickSound() }}
           >
-            <div className="text-left flex-1">
+            <div className="text-left flex-1 min-w-0">
               <span className="text-[10px] block opacity-50 uppercase">
                 Next Up
               </span>
@@ -86,7 +87,7 @@ export default function TranslationDetail() {
             <i className="fa-solid fa-arrow-right text-white ml-4"></i>
           </Link>
         ) : (
-          <div className="w-1/2 opacity-20 border border-dashed border-accent-secondary rounded-md px-4 py-2 flex items-center justify-end italic text-xs"></div>
+          <div className="hidden md:flex w-1/2 opacity-20 border border-dashed border-accent-secondary rounded-md px-4 py-2 items-center justify-end italic text-xs"></div>
         )}
       </div>
     </section>

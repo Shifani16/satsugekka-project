@@ -10,8 +10,8 @@ const TranslationCard: React.FC<TranslationCardProps> = ({
   linkhref,
 }) => {
   return (
-    <div className="grid grid-cols-2 w-full md:w-3/4 border mt-5 md:mt-10 border-accent rounded-xl bg-white/8 h-45 overflow-hidden transition-all duration-300 hover:scale-101 cursor-pointer">
-      <div className=" flex flex-col p-2 md:p-4 md:mt-2 md:pr-2 mt-1 pr-1">
+    <div className="grid grid-cols-2 w-full md:w-3/4 border mt-8 md:mt-10 border-accent rounded-xl bg-white/8 h-45 overflow-hidden transition-all duration-300 hover:scale-101 cursor-pointer">
+      <div className=" flex flex-col p-3 md:p-4 md:mt-2 md:pr-2 mt-1 pr-1">
         <h1 className="font-plex text-white font-bold text-sm md:text-xl">
           {title}
         </h1>
