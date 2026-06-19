@@ -34,3 +34,7 @@ client/.env.local
 *.njsproj
 *.sln
 *.sw?
+
+# Vite cache
+.vite/
+node_modules/
