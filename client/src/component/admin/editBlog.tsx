@@ -1,7 +1,7 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import Popup from "../reusable/Popup";
 import MarkdownEditor from "../reusable/MarkdownEditor";
-import { adminFetch, uploadImage } from "../../utils/AdminApi";
+import { adminFetch, uploadImage } from "../../utils/adminApi";
 import { useNavigate, useParams } from "react-router-dom";
 
 export default function EditBlog() {
