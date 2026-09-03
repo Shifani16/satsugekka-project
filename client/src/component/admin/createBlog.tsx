@@ -1,7 +1,7 @@
 import { useState, type ChangeEvent } from "react";
 import Popup from "../reusable/Popup";
 import MarkdownEditor from "../reusable/MarkdownEditor";
-import { adminFetch, uploadImage } from "../../utils/AdminApi";
+import { adminFetch, uploadImage } from "../../utils/adminApi";
 
 export default function CreateBlog() {
   const [content, setContent] = useState("");

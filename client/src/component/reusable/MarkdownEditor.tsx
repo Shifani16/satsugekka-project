@@ -1,6 +1,6 @@
 import { useRef, useState, type ChangeEvent } from "react";
 import ReactMarkdown from "react-markdown";
-import { uploadImage } from "../../utils/AdminApi";
+import { uploadImage } from "../../utils/adminApi";
 
 interface MarkdownEditorProps {
   value: string;
