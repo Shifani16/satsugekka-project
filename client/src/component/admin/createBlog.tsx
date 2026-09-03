@@ -1,16 +1,16 @@
-import ReactQuill from "react-quill-new";
-import "react-quill-new/dist/quill.snow.css";
-import { useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useState, type ChangeEvent } from "react";
 import Popup from "../reusable/Popup";
-import { supabase } from "../../api/supabaseClient";
+import MarkdownEditor from "../reusable/MarkdownEditor";
+import { adminFetch, uploadImage } from "../../utils/AdminApi";
 
 export default function CreateBlog() {
-  const quillRef = useRef<ReactQuill>(null); // Reference to the editor
   const [content, setContent] = useState("");
   const [title, setTitle] = useState("");
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const baseURL = import.meta.env.VITE_API_URL;
 
   const [popupState, setPopupState] = useState({
     isOpen: false,
@@ -18,56 +18,6 @@ export default function CreateBlog() {
     title: "",
     message: "",
   });
-
-  const imageHandler = () => {
-    const input = document.createElement("input");
-    input.setAttribute("type", "file");
-    input.setAttribute("accept", "image/*");
-    input.click();
-
-    input.onchange = async () => {
-      const file = input.files?.[0];
-      if (file) {
-        try {
-          const fileName = `${Date.now()}-${file.name}`;
-          const filePath = `blog-content/${fileName}`;
-
-          const { error } = await supabase.storage
-            .from("blog-thumbnails")
-            .upload(filePath, file);
-
-          if (error) throw error;
-
-          const { data: urlData } = supabase.storage
-            .from("blog-thumbnails")
-            .getPublicUrl(filePath);
-
-          const quill = quillRef.current?.getEditor();
-          if (quill) {
-            const range = quill.getSelection();
-            quill.insertEmbed(range ? range.index : 0, "image", urlData.publicUrl);
-          }
-        } catch (err) {
-          console.error("Image upload failed:", err);
-        }
-      }
-    };
-  };
-
-  const modules = useMemo(() => ({
-    toolbar: {
-      container: [
-        [{ header: [1, 2, false] }],
-        ["bold", "italic", "underline", "strike"],
-        [{ list: "ordered" }, { list: "bullet" }],
-        ["image", "link"],
-        ["clean"],
-      ],
-      handlers: {
-        image: imageHandler,
-      },
-    },
-  }), []);
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -91,30 +41,18 @@ export default function CreateBlog() {
     setIsSubmitting(true);
 
     try {
-      const baseURL = import.meta.env.VITE_API_URL;
-      const fileExt = thumbnail?.name.split(".").pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `thumbnails/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("blog-thumbnails")
-        .upload(filePath, thumbnail);
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from("blog-thumbnails")
-        .getPublicUrl(filePath);
+      const thumbnailUrl = await uploadImage(baseURL, thumbnail);
 
       const blogData = {
         title,
         content,
-        short_description: content.substring(0, 100).replace(/<[^>]*>?/gm, ""),
-        linkhref: `/blog/${title.toLowerCase().replace(/\s+/g, "-")}`,
-        thumbnail_src: urlData.publicUrl,
+        short_description: content
+          .replace(/[#*_`>\-!\[\]()]/g, "")
+          .substring(0, 100),
+        thumbnail_src: thumbnailUrl,
       };
 
-      const resp = await fetch(`${baseURL}/my-blog`, {
+      const resp = await adminFetch(`${baseURL}/my-blog`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(blogData),
@@ -125,14 +63,16 @@ export default function CreateBlog() {
           isOpen: true,
           type: "success",
           title: "Published",
-          message: "Blog posted successfully!",
+          message:
+            "Blog posted! It commits straight to your repo, so it may take ~30-60s to appear live while Vercel redeploys.",
         });
         setTitle("");
         setContent("");
         setThumbnail(null);
         setPreview(null);
       } else {
-        throw new Error("Failed to publish");
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to publish");
       }
     } catch (err: any) {
       setPopupState({
@@ -155,23 +95,16 @@ export default function CreateBlog() {
       </h1>
       <input
         className="px-4 py-2 bg-white/20 border rounded-md text-white w-full border-accent focus:border-accent-secondary outline-none"
+        value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Write the title here..."
         type="text"
       />
 
       <h1 className="mt-5 font-plex text-accent text-xl font-bold mb-3">
-        Content
+        Content (Markdown)
       </h1>
-      <div>
-        <ReactQuill
-          theme="snow"
-          value={content}
-          onChange={setContent}
-          modules={modules}
-          className="text-white"
-        ></ReactQuill>
-      </div>
+      <MarkdownEditor value={content} onChange={setContent} baseURL={baseURL} />
 
       <h1 className="mt-10 font-plex text-accent text-xl font-bold mb-3">
         Upload Thumbnail
@@ -221,7 +154,7 @@ export default function CreateBlog() {
       <Popup
         isOpen={popupState.isOpen}
         onClose={() => setPopupState({ ...popupState, isOpen: false })}
-        onConfirm={() => setPopupState({ ...popupState, isOpen: false })} // Added this
+        onConfirm={() => setPopupState({ ...popupState, isOpen: false })}
         title={popupState.title}
         type={popupState.type}
       >

@@ -34,7 +34,7 @@ export default function Intro() {
       </div>
 
       <div className="flex h-screen w-screen items-center justify-center">
-        <h1 className="font-maru font-bold text-3xl md:text-6xl text-primary animate-handwritten">
+        <h1 id="catchphrase" className="font-maru font-bold text-3xl md:text-6xl text-primary animate-handwritten">
           "SNOW. MOON. FLOWER"
         </h1>
       </div>

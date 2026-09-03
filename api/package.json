@@ -4,16 +4,18 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
+    "dev": "cross-env RUN_LOCAL_SERVER=true tsx watch index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@supabase/supabase-js": "^2.99.2",
+    "@supabase/supabase-js": "^2.114.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "gray-matter": "^4.0.3",
     "pg": "^8.21.0",
     "tsx": "^4.22.4"
   },
@@ -21,6 +23,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/pg": "^8.20.0",
+    "cross-env": "^10.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },

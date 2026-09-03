@@ -1,319 +1,289 @@
-import express, { json, type Request, type Response } from "express";
+import express, { type Request, type Response } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import { Pool } from "pg";
-import { supabase } from "./supabaseClient.js";
-import { createClient } from "@supabase/supabase-js";
+import multer from "multer"
+import {
+  listBlogPosts,
+  getBlogPost,
+  buildBlogMarkdown,
+  blogSlugFromTitle,
+  blogFilePath,
+  listTranslationPosts,
+  getTranslationPost,
+  buildTranslationMarkdown,
+  translationSlugFromTitle,
+  translationFilePath,
+  listCharacters,
+  getCharacter,
+  characterFilePath,
+  serializeCharacters,
+  type Character,
+} from "./lib/content.js";
+import { putFile, deleteFile } from "./lib/github.js";
+import { checkAdminCredentials, signToken, requireAdmin } from "./lib/auth.js";
+import { handleUpload } from "./lib/upload.js";
 
 dotenv.config();
 
 const app = express();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 4 * 1024 * 1024 } });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Local server running on port ${PORT}`));
+if (process.env.NODE_ENV !== "production" || process.env.RUN_LOCAL_SERVER === "true") {
+  app.listen(PORT, () => console.log(`Local server running on port ${PORT}`));
+}
 
-app.use(cors({ origin: '*' }));
+app.use(cors({ origin: "*" }));
 app.use(express.json());
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+app.get("/", (_req: Request, res: Response) => {
+  res.send("Satsugekka API is online!");
 });
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Satsugekka API is online! 🌸");
+// ---------------- Blog ----------------
+
+app.get("/my-blog", (_req: Request, res: Response) => {
+  const blogs = listBlogPosts();
+  res.status(200).json({ message: "Getting all blog data!", count: blogs.length, blogs });
 });
 
-app.get("/my-blog", async (req: Request, res: Response) => {
+app.get("/my-blog/:id", (req: Request, res: Response) => {
+  const post = getBlogPost(String(req.params.id));
+  if (!post) return res.status(404).json({ error: "Blog post not found" });
+  res.status(200).json(post);
+});
+
+app.post("/my-blog", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { data, error } = await supabase
-      .from("blog")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const { title, content, short_description, thumbnail_src } = req.body;
+    if (!title || !content) {
+      return res.status(400).json({ error: "title and content are required" });
+    }
 
-    if (error) throw error;
-    return res.status(200).json({
-      message: "Getting all blog data!",
-      count: data?.length || 0,
-      blogs: data,
+    const slug = blogSlugFromTitle(title);
+    if (getBlogPost(slug)) {
+      return res.status(409).json({ error: "A post with this title already exists" });
+    }
+
+    const now = new Date().toISOString();
+    const markdown = buildBlogMarkdown({
+      title,
+      content,
+      short_description: short_description || "",
+      thumbnail_src: thumbnail_src || "",
+      created_at: now,
+      updated_at: now,
     });
+
+    await putFile(blogFilePath(slug), markdown, `Add blog post: ${title}`);
+
+    res.status(201).json(getBlogPost(slug) ?? { post_id: slug, title, content });
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 });
 
-// app.post("/my-blog", async (req: Request, res: Response) => {
-//   try {
-//     const { title, content, linkhref, short_description, thumbnail_src } =
-//       req.body;
-
-//     const { data, error } = await supabase
-//       .from("blog")
-//       .insert([{ title, content, linkhref, short_description, thumbnail_src }])
-//       .select()
-//       .single();
-
-//     if (error) throw error;
-//     res.status(201).json(data);
-//   } catch (err: any) {
-//     res.status(400).json({ error: err.message });
-//   }
-// });
-
-// app.put("/my-blog/:id", async (req: Request, res: Response) => {
-//   try {
-//     const { id } = req.params;
-//     const updates = req.body;
-
-//     const { data, error } = await supabase
-//       .from("blog")
-//       .update(updates)
-//       .eq("post_id", id)
-//       .select()
-//       .single();
-
-//     if (error) throw error;
-//     res.status(200).json(data);
-//   } catch (err: any) {
-//     res.status(400).json({ error: err.message });
-//   }
-// });
-
-app.get("/my-blog/:id", async (req: Request, res: Response) => {
+app.put("/my-blog/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const { data, error } = await supabase
-      .from("blog")
-      .select("*")
-      .eq("post_id", id)
-      .single();
+    const existing = getBlogPost(String(req.params.id));
+    if (!existing) return res.status(404).json({ error: "Blog post not found" });
 
-    if (error) throw error;
-    res.status(200).json(data);
+    const { title, content, short_description, thumbnail_src } = req.body;
+    const markdown = buildBlogMarkdown({
+      title: title ?? existing.title,
+      content: content ?? existing.content,
+      short_description: short_description ?? existing.short_description,
+      thumbnail_src: thumbnail_src ?? existing.thumbnail_src,
+      created_at: existing.created_at,
+      updated_at: new Date().toISOString(),
+    });
+
+    await putFile(blogFilePath(String(req.params.id)), markdown, `Update blog post: ${String(req.params.id)}`);
+    res.status(200).json(getBlogPost(String(req.params.id)));
   } catch (err: any) {
-    res.status(404).json({ error: "Blog post not found" });
+    res.status(400).json({ error: err.message });
   }
 });
 
-app.delete("/my-blog/:id", async (req: Request, res: Response) => {
+app.delete("/my-blog/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const { error } = await supabase.from("blog").delete().eq("post_id", id);
-
-    if (error) throw error;
+    await deleteFile(blogFilePath(String(req.params.id)), `Delete blog post: ${String(req.params.id)}`);
     res.status(200).json({ message: "Deleted successfully" });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
 });
 
-app.delete("/translation-posts/:id", async (req: Request, res: Response) => {
+// ---------------- Translation ----------------
+
+app.get("/translation-posts", (_req: Request, res: Response) => {
+  res.status(200).json(listTranslationPosts());
+});
+
+app.get("/translation-posts/:slug", (req: Request, res: Response) => {
+  const post = getTranslationPost(String(req.params.slug));
+  if (!post) return res.status(404).json({ error: "Translation post not found" });
+  res.status(200).json(post);
+});
+
+app.post("/translation-posts", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { title, content, short_description, thumbnail_src } = req.body;
+    if (!title || !content) {
+      return res.status(400).json({ error: "title and content are required" });
+    }
 
-    const { error } = await supabase
-      .from("translation_post")
-      .delete()
-      .eq("translation_id", id);
+    const slug = translationSlugFromTitle(title);
+    if (getTranslationPost(slug)) {
+      return res.status(409).json({ error: "A post with this title already exists" });
+    }
 
-    if (error) throw error;
+    const now = new Date().toISOString();
+    const markdown = buildTranslationMarkdown({
+      title,
+      content,
+      short_description: short_description || "",
+      thumbnail_src: thumbnail_src || "",
+      created_at: now,
+      updated_at: now,
+    });
+
+    await putFile(translationFilePath(slug), markdown, `Add translation post: ${title}`);
+    res.status(201).json(getTranslationPost(slug));
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.put("/translation-posts/:slug", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const existing = getTranslationPost(String(req.params.slug));
+    if (!existing) return res.status(404).json({ error: "Translation post not found" });
+
+    const { title, content, short_description, thumbnail_src } = req.body;
+    const markdown = buildTranslationMarkdown({
+      title: title ?? existing.title,
+      content: content ?? existing.content,
+      short_description: short_description ?? existing.short_description,
+      thumbnail_src: thumbnail_src ?? existing.thumbnail_src,
+      created_at: existing.created_at,
+      updated_at: new Date().toISOString(),
+    });
+
+    await putFile(
+      translationFilePath(String(req.params.slug)),
+      markdown,
+      `Update translation post: ${String(req.params.slug)}`,
+    );
+    res.status(200).json(getTranslationPost(String(req.params.slug)));
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.delete("/translation-posts/:id", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    await deleteFile(translationFilePath(String(req.params.id)), `Delete translation post: ${String(req.params.id)}`);
     res.status(200).json({ message: "Deleted successfully" });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
 });
 
-app.get("/translation-posts", async (req: Request, res: Response) => {
-  try {
-    const { data, error } = await supabase
-      .from("translation_post")
-      .select("*")
-      .order("created_at", { ascending: false });
+// ---------------- Characters ----------------
 
-    if (error) throw error;
-    res.status(200).json(data);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
+app.get("/characters", (_req: Request, res: Response) => {
+  res.status(200).json(listCharacters());
 });
 
-app.get("/translation-posts/:slug", async (req: Request, res: Response) => {
-  try {
-    const { slug } = req.params;
-
-    const fullPath = `/translation/${slug}`;
-
-    const { data, error } = await supabase
-      .from("translation_post")
-      .select("*")
-      .eq("linkhref", fullPath)
-      .single();
-
-    if (error) throw error;
-    res.status(200).json(data);
-  } catch (err: any) {
-    res.status(404).json({ error: "Translation post not found" });
-  }
+app.get("/characters/:id", (req: Request, res: Response) => {
+  const char = getCharacter(Number(String(req.params.id)));
+  if (!char) return res.status(404).json({ error: "Character not found" });
+  res.status(200).json(char);
 });
 
-app.put("/translation-posts/:slug", async (req: Request, res: Response) => {
+app.post("/characters", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { slug } = req.params;
+    const { char_id, char_name, char_img } = req.body;
+    if (!char_id || !char_name) {
+      return res.status(400).json({ error: "char_id and char_name are required" });
+    }
 
-    const fullPath = `/translation/${slug}`;
+    const chars = listCharacters();
+    const now = new Date().toISOString();
+    const newChar: Character = {
+      id: chars.length ? Math.max(...chars.map((c) => c.id)) + 1 : 1,
+      char_id,
+      char_name,
+      char_img: char_img || "",
+      created_at: now,
+      updated_at: now,
+    };
+    const updated = [...chars, newChar];
 
-    const { data, error } = await supabase
-      .from("translation_post")
-      .update(req.body)
-      .eq("linkhref", fullPath)
-      .select()
-      .single();
-
-    if (error) throw error;
-    res.status(201).json(data);
+    await putFile(characterFilePath(), serializeCharacters(updated), `Add character: ${char_name}`);
+    res.status(201).json(newChar);
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
 });
 
-app.post("/translation-posts", async (req: Request, res: Response) => {
+app.put("/characters/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { data, error } = await supabase
-      .from("translation_post")
-      .insert([req.body])
-      .select()
-      .single();
+    const id = Number(String(req.params.id));
+    const chars = listCharacters();
+    const idx = chars.findIndex((c) => c.id === id);
+    if (idx === -1) return res.status(404).json({ error: "Character not found" });
 
-    if (error) throw error;
-    res.status(201).json(data);
+    const updatedChar: Character = {
+      ...chars[idx],
+      ...req.body,
+      id,
+      updated_at: new Date().toISOString(),
+    };
+    const updated = [...chars];
+    updated[idx] = updatedChar;
+
+    await putFile(
+      characterFilePath(),
+      serializeCharacters(updated),
+      `Update character: ${updatedChar.char_name}`,
+    );
+    res.status(200).json(updatedChar);
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
 });
 
-app.get("/characters", async (req: Request, res: Response) => {
+app.delete("/characters/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { data, error } = await supabase.from("character").select("*");
+    const id = Number(String(req.params.id));
+    const chars = listCharacters();
+    const updated = chars.filter((c) => c.id !== id);
 
-    if (error) throw error;
-    res.status(200).json(data);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.get("/characters/:id", async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { data, error } = await supabase
-      .from("character")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (error) throw error;
-    res.status(200).json(data);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post("/characters", async (req: Request, res: Response) => {
-  try {
-    const { data, error } = await supabase
-      .from("character")
-      .insert([req.body])
-      .select()
-      .single();
-
-    if (error) throw Error;
-    res.status(201).json(data)
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-app.delete("/characters/:id", async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-
-    const { error } = await supabase.from("character").delete().eq("id", id);
-
-    if (error) throw error;
+    await putFile(characterFilePath(), serializeCharacters(updated), `Delete character id ${id}`);
     res.status(200).json({ message: "Deleted successfully" });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
 });
 
-app.put("/characters/:id", async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { data, error } = await supabase
-      .from("character")
-      .update(req.body)
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    res.status(200).json(data);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-app.post("/my-blog", async (req: Request, res: Response) => {
-  try {
-    const { data, error } = await supabase
-      .from("blog")
-      .insert([req.body])
-      .select()
-      .single();
-
-    if (error) throw error;
-    res.status(201).json(data);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-app.put("/my-blog/:id", async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { data, error } = await supabase
-      .from("blog")
-      .update(req.body)
-      .eq("post_id", id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    res.status(200).json(data);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
-});
+// ---------------- Auth ----------------
 
 app.post("/login", async (req: Request, res: Response) => {
   const { username, password } = req.body;
 
-  console.log(`Login attempt: ${username} with password: ${password}`);
-
-  const { data: isSuccess, error } = await supabase.rpc("check_admin_login", {
-    p_username: username,
-    p_password: password,
-  });
-
-  if (error) {
-    console.error("Supabase RPC Error:", error);
-    return res.status(500).json({ message: "Database error" });
-  }
-
-  if (!isSuccess) {
+  const ok = await checkAdminCredentials(username, password);
+  if (!ok) {
     return res.status(401).json({ message: "Invalid cred" });
   }
 
-  res.json({ success: true, message: "Welcome" });
+  const token = signToken(username);
+  res.json({ success: true, message: "Welcome", token });
 });
+
+// ---------------- Uploads ----------------
+
+app.post("/upload", requireAdmin, upload.single("file"), handleUpload);
 
 export default app;

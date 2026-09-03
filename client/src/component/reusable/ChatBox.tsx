@@ -43,7 +43,7 @@ export default function ChatBox() {
 
   const lines = post?.content
     ? post.content
-        .split(";")
+        .split("\n")
         .map((line: string) => line.trim())
         .filter(Boolean)
     : [];
