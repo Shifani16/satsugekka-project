@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "char_id": "haru",
+    "char_name": "Haruka",
+    "char_img": "https://kjeggajeznivehxiweee.supabase.co/storage/v1/object/sign/char-img/haru-z.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kOTQ2MDUxNy1mMGEyLTRmOTQtYjg4Mi02ZTI0N2RiZGFkZTkiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJjaGFyLWltZy9oYXJ1LXoucG5nIiwiaWF0IjoxNzc0NzAyNzk0LCJleHAiOjE5MzIzODI3OTR9.WD0BDbRIzpXZjK2C2B7caTcTVoSI6npF3Ko-3RQUeOY",
+    "created_at": "2026-03-28T13:00:12+00:00",
+    "updated_at": "2026-03-28T13:00:14+00:00"
+  },
+  {
+    "id": 2,
+    "char_id": "tou",
+    "char_name": "Touma",
+    "char_img": "https://kjeggajeznivehxiweee.supabase.co/storage/v1/object/sign/char-img/touma.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kOTQ2MDUxNy1mMGEyLTRmOTQtYjg4Mi02ZTI0N2RiZGFkZTkiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJjaGFyLWltZy90b3VtYS5wbmciLCJpYXQiOjE3NzQ3MDI4NjUsImV4cCI6MTgwNjIzODg2NX0.E2aOCIqqSdFkYHra_xKQUOQoKrZuMLzB5L8KySEZiSU",
+    "created_at": "2026-03-28T13:01:16+00:00",
+    "updated_at": "2026-03-28T13:01:17+00:00"
+  },
+  {
+    "id": 3,
+    "char_id": "mina",
+    "char_name": "Minami",
+    "char_img": "https://kjeggajeznivehxiweee.supabase.co/storage/v1/object/sign/char-img/mina.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kOTQ2MDUxNy1mMGEyLTRmOTQtYjg4Mi02ZTI0N2RiZGFkZTkiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJjaGFyLWltZy9taW5hLnBuZyIsImlhdCI6MTc3NDcwMjg5MywiZXhwIjoxODA2MjM4ODkzfQ.hyhQOhbMaYOT5fb-vucS8xrmqyPEZO9ptx-ulfq776Q",
+    "created_at": "2026-03-28T13:01:42+00:00",
+    "updated_at": "2026-03-28T13:01:43+00:00"
+  },
+  {
+    "id": 4,
+    "char_id": "tora",
+    "char_name": "Torao",
+    "char_img": "https://kjeggajeznivehxiweee.supabase.co/storage/v1/object/sign/char-img/tora.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kOTQ2MDUxNy1mMGEyLTRmOTQtYjg4Mi02ZTI0N2RiZGFkZTkiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJjaGFyLWltZy90b3JhLnBuZyIsImlhdCI6MTc3NDcwMjkyNSwiZXhwIjoxODA2MjM4OTI1fQ.Vkl1gs_AabBw0nircOgbzLEWbjp0V4kD_K3qfDfp7io",
+    "created_at": "2026-03-28T13:02:12+00:00",
+    "updated_at": "2026-03-28T13:02:13+00:00"
+  },
+  {
+    "id": 6,
+    "char_id": "yuta",
+    "char_name": "Okkotsu Yuta",
+    "char_img": "https://kjeggajeznivehxiweee.supabase.co/storage/v1/object/public/char-img/avatars/1774708717550.png",
+    "created_at": "2026-03-28T14:38:33.057712+00:00",
+    "updated_at": "2026-03-28T14:38:33.057712+00:00"
+  },
+  {
+    "id": 7,
+    "char_id": "kdc",
+    "char_name": "Kadoc",
+    "char_img": "https://kjeggajeznivehxiweee.supabase.co/storage/v1/object/public/char-img/avatars/1781686653115.png",
+    "created_at": "2026-06-17T08:57:28.403974+00:00",
+    "updated_at": "2026-06-17T08:57:28.403974+00:00"
+  }
+]

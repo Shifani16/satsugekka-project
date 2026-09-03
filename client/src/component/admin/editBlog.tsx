@@ -1,14 +1,12 @@
-import ReactQuill from "react-quill-new";
-import "react-quill-new/dist/quill.snow.css";
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import Popup from "../reusable/Popup";
-import { supabase } from "../../api/supabaseClient";
+import MarkdownEditor from "../reusable/MarkdownEditor";
+import { adminFetch, uploadImage } from "../../utils/AdminApi";
 import { useNavigate, useParams } from "react-router-dom";
 
 export default function EditBlog() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const quillRef = useRef<ReactQuill>(null);
   const [content, setContent] = useState("");
   const [title, setTitle] = useState("");
   const [thumbnail, setThumbnail] = useState<File | null>(null);
@@ -16,6 +14,13 @@ export default function EditBlog() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const baseURL = import.meta.env.VITE_API_URL;
+
+  const [popupState, setPopupState] = useState({
+    isOpen: false,
+    type: "success" as any,
+    title: "",
+    message: "",
+  });
 
   useEffect(() => {
     const fetchBlog = async () => {
@@ -28,7 +33,7 @@ export default function EditBlog() {
       }
     };
     if (id) fetchBlog();
-  }, [id]);
+  }, [id, baseURL]);
 
   const handleUpdate = async () => {
     setIsSubmitting(true);
@@ -36,27 +41,19 @@ export default function EditBlog() {
       let finalThumbnail = preview;
 
       if (thumbnail) {
-        const fileExt = thumbnail.name.split(".").pop();
-        const fileName = `${Date.now()}.${fileExt}`;
-        const { error } = await supabase.storage
-          .from("blog-thumbnails")
-          .upload(`thumbnails/${fileName}`, thumbnail);
-        if (error) throw error;
-        const { data } = supabase.storage
-          .from("blog-thumbnails")
-          .getPublicUrl(`thumbnails/${fileName}`);
-        finalThumbnail = data.publicUrl;
+        finalThumbnail = await uploadImage(baseURL, thumbnail);
       }
 
       const updatedData = {
         title,
         content,
         thumbnail_src: finalThumbnail,
-        short_description: content.substring(0, 100).replace(/<[^>]*>?/gm, ""),
-        linkhref: `/blog/${title.toLowerCase().replace(/\s+/g, "-")}`,
+        short_description: content
+          .replace(/[#*_`>\-!\[\]()]/g, "")
+          .substring(0, 100),
       };
 
-      const resp = await fetch(`${baseURL}/my-blog/${id}`, {
+      const resp = await adminFetch(`${baseURL}/my-blog/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedData),
@@ -67,86 +64,24 @@ export default function EditBlog() {
           isOpen: true,
           type: "success",
           title: "Updated",
-          message: "Blog updated!",
+          message: "Blog updated! It may take ~30-60s to appear live while Vercel redeploys.",
         });
         setTimeout(() => navigate("/my-blog"), 1500);
+      } else {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to update");
       }
     } catch (err: any) {
-        setPopupState({
+      setPopupState({
         isOpen: true,
         type: "danger",
         title: "Failed",
         message: err.message || "Something went wrong.",
       });
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   };
-
-  const [popupState, setPopupState] = useState({
-    isOpen: false,
-    type: "success" as any,
-    title: "",
-    message: "",
-  });
-
-  const imageHandler = () => {
-    const input = document.createElement("input");
-    input.setAttribute("type", "file");
-    input.setAttribute("accept", "image/*");
-    input.click();
-
-    input.onchange = async () => {
-      const file = input.files?.[0];
-      if (file) {
-        try {
-          const fileName = `${Date.now()}-${file.name}`;
-          const filePath = `blog-content/${fileName}`;
-
-          const { error } = await supabase.storage
-            .from("blog-thumbnails")
-            .upload(filePath, file);
-
-          if (error) throw error;
-
-          const { data: urlData } = supabase.storage
-            .from("blog-thumbnails")
-            .getPublicUrl(filePath);
-
-          // Get the editor instance correctly
-          const quill = quillRef.current?.getEditor();
-          if (quill) {
-            const range = quill.getSelection();
-            quill.insertEmbed(
-              range ? range.index : 0,
-              "image",
-              urlData.publicUrl,
-            );
-          }
-        } catch (err) {
-          console.error("Image upload failed:", err);
-        }
-      }
-    };
-  };
-
-  const modules = useMemo(
-    () => ({
-      toolbar: {
-        container: [
-          [{ header: [1, 2, false] }],
-          ["bold", "italic", "underline", "strike"],
-          [{ list: "ordered" }, { list: "bullet" }],
-          ["image", "link"],
-          ["clean"],
-        ],
-        handlers: {
-          image: imageHandler,
-        },
-      },
-    }),
-    [],
-  );
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -160,7 +95,7 @@ export default function EditBlog() {
 
   return (
     <section className="font-plex max-w-4xl">
-      <h1 className="text-white text-5xl font-bold mb-8">New Post</h1>
+      <h1 className="text-white text-5xl font-bold mb-8">Edit Post</h1>
 
       <h1 className="font-plex text-accent text-xl font-bold mb-3">
         Blog Title
@@ -174,17 +109,9 @@ export default function EditBlog() {
       />
 
       <h1 className="mt-5 font-plex text-accent text-xl font-bold mb-3">
-        Content
+        Content (Markdown)
       </h1>
-      <div>
-        <ReactQuill
-          theme="snow"
-          value={content}
-          onChange={setContent}
-          modules={modules}
-          className="text-white"
-        ></ReactQuill>
-      </div>
+      <MarkdownEditor value={content} onChange={setContent} baseURL={baseURL} />
 
       <h1 className="mt-10 font-plex text-accent text-xl font-bold mb-3">
         Upload Thumbnail
@@ -234,7 +161,7 @@ export default function EditBlog() {
       <Popup
         isOpen={popupState.isOpen}
         onClose={() => setPopupState({ ...popupState, isOpen: false })}
-        onConfirm={() => setPopupState({ ...popupState, isOpen: false })} // Added this
+        onConfirm={() => setPopupState({ ...popupState, isOpen: false })}
         title={popupState.title}
         type={popupState.type}
       >
