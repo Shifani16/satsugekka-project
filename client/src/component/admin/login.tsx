@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { setToken } from "../../utils/adminApi";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -12,7 +13,7 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
 
-    const baseUrl = import.meta.env.VITE_API_URL
+    const baseUrl = import.meta.env.VITE_API_URL;
 
     try {
       const res = await fetch(`${baseUrl}/login`, {
@@ -26,7 +27,10 @@ export default function Login() {
 
       const result = await res.json();
 
-      if (res.ok && result.success) {
+      if (res.ok && result.success && result.token) {
+        // 2. Save the token string using your setToken helper!
+        setToken(result.token);
+        
         localStorage.setItem("is_admin", "true");
         window.location.href = "/create-blog";
       } else {
