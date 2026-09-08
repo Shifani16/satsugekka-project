@@ -31,16 +31,16 @@ if (process.env.NODE_ENV !== "production" || process.env.RUN_LOCAL_SERVER === "t
   app.listen(PORT, () => console.log(`Local server running on port ${PORT}`));
 }
 
-app.use(cors({ origin: "*" }));
+const corsOptions = {
+  origin: "https://satsugekka-project.vercel.app",
+  allowedHeaders: ["Content-Type", "Authorization", "x-vercel-digest"],
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(express.json());
-app.use(
-  cors({
-    origin: "https://satsugekka-project.vercel.app",
-    allowedHeaders: ["Content-Type", "Authorization", "x-vercel-digest"],
-    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
-    credentials: true,
-  })
-);
 
 app.get("/", (_req: Request, res: Response) => {
   res.send("Satsugekka API is online!");
