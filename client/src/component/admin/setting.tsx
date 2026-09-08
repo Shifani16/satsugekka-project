@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import PopupChar from "../reusable/PopupChar";
 import Popup from "../reusable/Popup";
-import { supabase } from "../../api/supabaseClient";
+import { adminFetch, uploadImage } from "../../utils/adminApi";
 
 export interface CharacterEntry {
   id: number;
@@ -54,22 +54,7 @@ export default function Setting() {
       let finalImageUrl = editingChar.char_img;
 
       if (updatedData.imageFile) {
-        const file = updatedData.imageFile;
-        const fileExt = file.name.split(".").pop();
-        const fileName = `${Date.now()}.${fileExt}`;
-        const filePath = `avatars/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("char-img")
-          .upload(filePath, file);
-
-        if (uploadError) throw uploadError;
-
-        const { data: urlData } = supabase.storage
-          .from("char-img")
-          .getPublicUrl(filePath);
-
-        finalImageUrl = urlData.publicUrl;
+        finalImageUrl = await uploadImage(baseURL, updatedData.imageFile);
       }
 
       const updatePayload = {
@@ -78,7 +63,7 @@ export default function Setting() {
         char_img: finalImageUrl,
       };
 
-      const resp = await fetch(`${baseURL}/characters/${selectedId}`, {
+      const resp = await adminFetch(`${baseURL}/characters/${selectedId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatePayload),
@@ -122,7 +107,7 @@ export default function Setting() {
     }
 
     try {
-      const resp = await fetch(`${baseURL}/characters/${selectedId}`, {
+      const resp = await adminFetch(`${baseURL}/characters/${selectedId}`, {
         method: "DELETE",
       });
 
@@ -184,23 +169,10 @@ export default function Setting() {
     try {
       let publicUrl = "";
       if (imageFile) {
-        const fileExt = imageFile.name.split(".").pop();
-        const fileName = `${Date.now()}.${fileExt}`;
-        const filePath = `avatars/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("char-img")
-          .upload(filePath, imageFile);
-
-        if (uploadError) throw uploadError;
-
-        const { data: urlData } = supabase.storage
-          .from("char-img")
-          .getPublicUrl(filePath);
-        publicUrl = urlData.publicUrl;
+        publicUrl = await uploadImage(baseURL, imageFile);
       }
 
-      const resp = await fetch(`${baseURL}/characters`, {
+      const resp = await adminFetch(`${baseURL}/characters`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

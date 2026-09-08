@@ -43,7 +43,7 @@ export default function ChatBox() {
 
   const lines = post?.content
     ? post.content
-        .split(";")
+        .split("\n")
         .map((line: string) => line.trim())
         .filter(Boolean)
     : [];
@@ -63,12 +63,17 @@ export default function ChatBox() {
         if (noteMatch) {
           const noteText = noteMatch[1].trim();
           return (
-            <div key={index} className="w-full text-left my-1 mt-10 md:mt-20 items-end">
-              <p className="font-plex text-primary font-bold italic text-sm">{noteText}</p>
+            <div
+              key={index}
+              className="w-full text-left my-1 mt-10 md:mt-20 items-end"
+            >
+              <p className="font-plex text-primary font-bold italic text-sm">
+                {noteText}
+              </p>
             </div>
-          )
+          );
         }
-        
+
         const specialMatch = line.match(/^\*(.*)\*$/);
 
         if (specialMatch) {
@@ -83,8 +88,6 @@ export default function ChatBox() {
             </div>
           );
         }
-
-        
 
         const match = line.match(/^([^:]*):\s*(.*)/);
 
@@ -106,29 +109,32 @@ export default function ChatBox() {
         return (
           <div
             key={index}
-            className={`flex items-start gap-4 ${!char ? "justify-center" : ""}`}
+            className={`flex items-start justify-center gap-4 ${!char ? "justify-center" : ""}`}
           >
             {char && (
               <img
                 src={char.char_img}
-                className="w-15 h-auto object-cover rounded-full shrink-0 aspect-square"
+                className="w-15 h-auto object-cover rounded-full shrink-0 aspect-square mt-2"
                 alt={char.char_name}
               />
             )}
 
-            <div
-              className={`border border-accent-secondary px-4 py-2  rounded-2xl ${char ? "rounded-tl-none w-3/4 bg-primary" : "items-center w-full rounded-sm bg-bg text-center italic opacity-90"} `}
-            >
+            <div className="flex flex-col w-3/4">
               {char && (
-                <h1 className="font-plex text-accent-secondary font-bold text-sm">
+                <h1 className="font-plex text-accent-secondary font-bold text-sm md:text-md mb-2">
                   {char.char_name}
                 </h1>
               )}
-              <p
-                className={`font-plex font-semibold text-sm ${char ? "bg-primary text-bg" : " italic text-primary"}`}
+
+              <div
+                className={`px-6 py-4 rounded-md ${char ? "rounded-tl-none bg-bg-dark" : "items-center w-full rounded-sm bg-bg-dark text-center italic opacity-90"} `}
               >
-                {message}
-              </p>
+                <p
+                  className={`font-plex font-semibold text-sm md:text-md ${char ? "bg-bg-dark text-primary" : " italic text-primary"}`}
+                >
+                  {message}
+                </p>
+              </div>
             </div>
           </div>
         );
