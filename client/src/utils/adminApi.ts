@@ -39,12 +39,19 @@ export async function uploadImage(baseURL: string, file: File): Promise<string> 
   const { upload } = await import("@vercel/blob/client");
   const token = getToken();
 
+  console.log("Retrieved Token:", token);
+
+  if (!token) {
+    throw new Error("Authentication token is missing. Please log in again.");
+  }
+
   try {
     const blob = await upload(file.name, file, {
       access: "public",
       handleUploadUrl: `${baseURL}/upload-token`,
-      // Passed through to the server route so it can authorize the upload.
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     return blob.url;
