@@ -1,6 +1,6 @@
 import { useEffect, useState, type ChangeEvent } from "react";
-import { supabase } from "../../api/supabaseClient";
 import Popup from "../reusable/Popup";
+import { adminFetch, uploadImage } from "../../utils/adminApi";
 import { useNavigate, useParams } from "react-router-dom";
 
 export default function EditTrans() {
@@ -31,7 +31,7 @@ export default function EditTrans() {
       }
     };
     if (slug) fetchPost();
-  }, [slug]);
+  }, [slug, baseURL]);
 
   const handleUpdate = async () => {
     setIsSubmitting(true);
@@ -39,31 +39,17 @@ export default function EditTrans() {
       let finalThumbnail = preview;
 
       if (thumbnail) {
-        const fileExt = thumbnail?.name.split(".").pop();
-        const fileName = `${Date.now()}.${fileExt}`;
-        const { error } = await supabase.storage
-          .from("post-thumbnail")
-          .upload(`thumbnails/${fileName}`, thumbnail);
-        if (error) throw error;
-        const { data } = supabase.storage
-          .from("post-thumbnail")
-          .getPublicUrl(`thumbnails/${fileName}`);
-        finalThumbnail = data.publicUrl;
+        finalThumbnail = await uploadImage(baseURL, thumbnail);
       }
-
-      const slug = title
-        .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, "")
-        .replace(/\s+/g, "-");
 
       const updatedData = {
         title,
         content,
         thumbnail_src: finalThumbnail,
-        linkhref: `/translation/${slug}`,
+        short_description: content.split("\n")[0]?.slice(0, 100) || "",
       };
 
-      const resp = await fetch(`${baseURL}/translation-posts/${slug}`, {
+      const resp = await adminFetch(`${baseURL}/translation-posts/${slug}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedData),
@@ -74,12 +60,12 @@ export default function EditTrans() {
           isOpen: true,
           type: "success",
           title: "Updated",
-          message: "Post updated successfully!",
+          message: "Post updated! It may take ~30-60s to appear live while Vercel redeploys.",
         });
         setTimeout(() => navigate("/my-translation"), 1500);
-        
       } else {
-        throw new Error("Failed to update");
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to update");
       }
     } catch (err: any) {
       setStatusPopup({
@@ -103,11 +89,9 @@ export default function EditTrans() {
     }
   };
 
-
-
   return (
     <section className="font-plex max-w-4xl">
-      <h1 className="text-white text-5xl font-bold mb-8">Create New</h1>
+      <h1 className="text-white text-5xl font-bold mb-8">Edit Post</h1>
 
       <h1 className="font-plex text-accent text-xl font-bold mb-3">Title</h1>
       <input
@@ -121,11 +105,17 @@ export default function EditTrans() {
       <h1 className="mt-5 font-plex text-accent text-xl font-bold mb-3">
         Content
       </h1>
+      <p className="text-primary/70 text-xs mb-2">
+        One line per statement. Use{" "}
+        <code className="text-accent">charId: message</code> for dialogue,{" "}
+        <code className="text-accent">*narration*</code> for narration,{" "}
+        <code className="text-accent">// note</code> for translator notes.
+      </p>
       <textarea
         onChange={(e) => setContent(e.target.value)}
         value={content}
         className="px-4 py-4 min-h-125 bg-white/20 border rounded-md text-white w-full border-accent focus:border-accent-secondary outline-none resize-none"
-        placeholder="Write ur content here fellas"
+        placeholder={"riko: Hey, are you free later?\n: Sure, why do you ask?"}
       />
 
       <h1 className="mt-10 font-plex text-accent text-xl font-bold mb-3">
@@ -175,7 +165,7 @@ export default function EditTrans() {
       <Popup
         isOpen={statusPopup.isOpen}
         onClose={() => setStatusPopup({ ...statusPopup, isOpen: false })}
-        onConfirm={() => setStatusPopup({ ...statusPopup, isOpen: false })} // Added this
+        onConfirm={() => setStatusPopup({ ...statusPopup, isOpen: false })}
         title={statusPopup.title}
         type={statusPopup.type}
       >

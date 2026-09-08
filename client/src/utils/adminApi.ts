@@ -33,21 +33,22 @@ export async function adminFetch(url: string, init: RequestInit = {}) {
   });
 }
 
-/** Uploads a file to the /upload endpoint and returns its public URL. */
+/** Uploads a file directly to Vercel Blob from the browser (bypasses the
+ *  serverless function's request-body size limit) and returns its public URL. */
 export async function uploadImage(baseURL: string, file: File): Promise<string> {
-  const formData = new FormData();
-  formData.append("file", file);
+  const { upload } = await import("@vercel/blob/client");
+  const token = getToken();
 
-  const res = await adminFetch(`${baseURL}/upload`, {
-    method: "POST",
-    body: formData,
-  });
+  try {
+    const blob = await upload(file.name, file, {
+      access: "public",
+      handleUploadUrl: `${baseURL}/upload-token`,
+      // Passed through to the server route so it can authorize the upload.
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || "Image upload failed");
+    return blob.url;
+  } catch (err: any) {
+    throw new Error(err.message || "Image upload failed");
   }
-
-  const data = await res.json();
-  return data.url as string;
 }
