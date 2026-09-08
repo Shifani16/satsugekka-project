@@ -10,10 +10,12 @@ dotenv.config();
 const app = express();
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Local server running on port ${PORT}`));
+if (process.env.NODE_ENV !== "production" || process.env.RUN_LOCAL_SERVER === "true") {
+  app.listen(PORT, () => console.log(`Local server running on port ${PORT}`));
+}
 
-app.use(cors({ origin: '*' }));
-app.use(express.json());
+app.use(cors({ origin: "*" }));
+app.use(express.json()); 
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
