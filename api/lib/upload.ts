@@ -1,27 +1,36 @@
-import { put } from "@vercel/blob";
+import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import type { Request, Response } from "express";
+import { verifyToken } from "./auth.js";
+
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const MAX_SIZE_BYTES = 15 * 1024 * 1024;
 
 /**
- * Expects multipart/form-data with a single file field named "file"
- * (parsed by multer upstream into req.file).
+ * POST /upload-token
  */
-export async function handleUpload(req: Request, res: Response) {
+export async function handleUploadToken(req: Request, res: Response) {
+  const authHeader = req.headers.authorization || "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  if (!token || !verifyToken(token)) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const body = req.body as HandleUploadBody;
+
   try {
-    const file = (req as any).file;
-    if (!file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
-
-    const safeName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, "_");
-    const key = `uploads/${Date.now()}-${safeName}`;
-
-    const blob = await put(key, file.buffer, {
-      access: "public",
-      contentType: file.mimetype,
+    const jsonResponse = await handleUpload({
+      body,
+      request: req,
+      onBeforeGenerateToken: async () => ({
+        allowedContentTypes: ALLOWED_TYPES,
+        maximumSizeInBytes: MAX_SIZE_BYTES,
+        addRandomSuffix: true,
+      }),
+      onUploadCompleted: async () => {
+      },
     });
-
-    res.status(201).json({ url: blob.url });
+    res.status(200).json(jsonResponse);
   } catch (err: any) {
-    res.status(500).json({ error: err.message || "Upload failed" });
+    res.status(400).json({ error: err.message || "Upload authorization failed" });
   }
 }

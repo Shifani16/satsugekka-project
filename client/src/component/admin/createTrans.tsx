@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent } from "react";
-import { supabase } from "../../api/supabaseClient";
 import Popup from "../reusable/Popup";
+import { adminFetch, uploadImage } from "../../utils/adminApi";
 
 export default function CreateTrans() {
   const [content, setContent] = useState("");
@@ -41,34 +41,16 @@ export default function CreateTrans() {
     setIsSubmitting(true);
 
     try {
-      const fileExt = thumbnail?.name.split(".").pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `thumbnails/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("post-thumbnail")
-        .upload(filePath, thumbnail);
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from("post-thumbnail")
-        .getPublicUrl(filePath);
-
-      const slug = title
-        .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, "")
-        .replace(/\s+/g, "-");
+      const thumbnailUrl = await uploadImage(baseURL, thumbnail);
 
       const postData = {
         title,
         content,
-        short_description: content.substring(0, 100).replace(/<[^>]*>?/gm, ""),
-        linkhref: `/translation/${slug}`,
-        thumbnail_src: urlData.publicUrl,
+        short_description: content.split("\n")[0]?.slice(0, 100) || "",
+        thumbnail_src: thumbnailUrl,
       };
 
-      const resp = await fetch(`${baseURL}/translation-posts`, {
+      const resp = await adminFetch(`${baseURL}/translation-posts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(postData),
@@ -79,14 +61,16 @@ export default function CreateTrans() {
           isOpen: true,
           type: "success",
           title: "Published",
-          message: "Post posted successfully!",
+          message:
+            "Post published! It commits straight to your repo, so it may take ~30-60s to appear live.",
         });
         setTitle("");
         setContent("");
         setThumbnail(null);
         setPreview(null);
       } else {
-        throw new Error("Failed to publish");
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to publish");
       }
     } catch (err: any) {
       setStatusPopup({
@@ -107,6 +91,7 @@ export default function CreateTrans() {
       <h1 className="font-plex text-accent text-xl font-bold mb-3">Title</h1>
       <input
         className="px-4 py-2 bg-white/20 border rounded-md text-white w-full border-accent focus:border-accent-secondary outline-none"
+        value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Write the title here..."
         type="text"
@@ -115,10 +100,17 @@ export default function CreateTrans() {
       <h1 className="mt-5 font-plex text-accent text-xl font-bold mb-3">
         Content
       </h1>
+      <p className="text-primary/70 text-xs mb-2">
+        One line per statement. Use{" "}
+        <code className="text-accent">charId: message</code> for dialogue,{" "}
+        <code className="text-accent">*narration*</code> for narration,{" "}
+        <code className="text-accent">// note</code> for translator notes.
+      </p>
       <textarea
+        value={content}
         onChange={(e) => setContent(e.target.value)}
         className="px-4 py-4 min-h-125 bg-white/20 border rounded-md text-white w-full border-accent focus:border-accent-secondary outline-none resize-none"
-        placeholder="Write ur content here fellas"
+        placeholder={"riko: Hey, are you free later?\n: Sure, why do you ask?\n*A quiet afternoon.*\n// translator note here"}
       />
 
       <h1 className="mt-10 font-plex text-accent text-xl font-bold mb-3">
@@ -168,7 +160,7 @@ export default function CreateTrans() {
       <Popup
         isOpen={statusPopup.isOpen}
         onClose={() => setStatusPopup({ ...statusPopup, isOpen: false })}
-        onConfirm={() => setStatusPopup({ ...statusPopup, isOpen: false })} // Added this
+        onConfirm={() => setStatusPopup({ ...statusPopup, isOpen: false })}
         title={statusPopup.title}
         type={statusPopup.type}
       >

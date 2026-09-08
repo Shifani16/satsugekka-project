@@ -1,7 +1,6 @@
 import express, { type Request, type Response } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import multer from "multer"
 import {
   listBlogPosts,
   getBlogPost,
@@ -21,12 +20,11 @@ import {
 } from "./lib/content.js";
 import { putFile, deleteFile } from "./lib/github.js";
 import { checkAdminCredentials, signToken, requireAdmin } from "./lib/auth.js";
-import { handleUpload } from "./lib/upload.js";
+import { handleUploadToken } from "./lib/upload.js";
 
 dotenv.config();
 
 const app = express();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 4 * 1024 * 1024 } });
 
 const PORT = process.env.PORT || 5000;
 if (process.env.NODE_ENV !== "production" || process.env.RUN_LOCAL_SERVER === "true") {
@@ -284,6 +282,6 @@ app.post("/login", async (req: Request, res: Response) => {
 
 // ---------------- Uploads ----------------
 
-app.post("/upload", requireAdmin, upload.single("file"), handleUpload);
+app.post("/upload-token", handleUploadToken);
 
 export default app;
