@@ -89,12 +89,7 @@ export default function MyBlog() {
           ↻ Refresh
         </button>
       </div>
-      <p className="text-primary/60 text-xs mt-2">
-        Publishing commits straight to your repo, so a new or edited post can
-        take a few seconds to show up here — use Refresh if you don't see it
-        right away.
-      </p>
-
+  
       <div className="mt-10 overflow-x-auto">
         <table className="w-full">
           <thead className="border-b border-white">
