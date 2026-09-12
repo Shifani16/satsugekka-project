@@ -15,6 +15,62 @@ interface TranslationPost {
   thumbnail_src: string;
 }
 
+type Entry =
+  | { type: "note"; text: string }
+  | { type: "narration"; text: string; originalText?: string }
+  | { type: "dialogue"; char: Character | null; text: string; originalText?: string };
+
+function parseEntries(lines: string[], chars: Character[]): Entry[] {
+  const entries: Entry[] = [];
+
+  for (const line of lines) {
+    // "^ original text" attaches as the original-language line for whatever
+    // came right before it (dialogue or narration). Optional — most lines
+    // won't have one.
+    const ogMatch = line.match(/^\^\s*(.*)/);
+    if (ogMatch) {
+      const last = entries[entries.length - 1];
+      if (last && (last.type === "narration" || last.type === "dialogue")) {
+        last.originalText = ogMatch[1].trim();
+      }
+      continue;
+    }
+
+    const noteMatch = line.match(/^\/\/\s*(.*)/);
+    if (noteMatch) {
+      entries.push({ type: "note", text: noteMatch[1].trim() });
+      continue;
+    }
+
+    const specialMatch = line.match(/^\*(.*)\*$/);
+    if (specialMatch) {
+      entries.push({ type: "narration", text: specialMatch[1].trim() });
+      continue;
+    }
+
+    const match = line.match(/^([^:]*):\s*(.*)/);
+    let char: Character | null = null;
+    let message = line;
+
+    if (match) {
+      const charId = match[1].trim();
+      const potentialMessage = match[2].trim();
+      const found = chars.find((c) => c.char_id === charId) || null;
+
+      if (found) {
+        char = found;
+        message = potentialMessage;
+      } else if (line.startsWith(":")) {
+        message = potentialMessage;
+      }
+    }
+
+    entries.push({ type: "dialogue", char, text: message });
+  }
+
+  return entries;
+}
+
 export default function ChatBox() {
   const params = useParams();
   const { translation_id } = params;
@@ -22,7 +78,6 @@ export default function ChatBox() {
   const [post, setPost] = useState<TranslationPost | null>(null);
   const baseURL = import.meta.env.VITE_API_URL;
 
-  console.log(params);
   useEffect(() => {
     Promise.all([
       fetch(`${baseURL}/characters`).then((res) => res.json()),
@@ -48,6 +103,8 @@ export default function ChatBox() {
         .filter(Boolean)
     : [];
 
+  const entries = parseEntries(lines, chars);
+
   return (
     <section className="py-6 px-4 flex flex-col gap-4 mx-auto">
       <div className="w-full flex justify-center">
@@ -57,55 +114,39 @@ export default function ChatBox() {
           alt={post.title}
         />
       </div>
-      {lines.map((line, index) => {
-        const noteMatch = line.match(/^\/\/\s*(.*)/);
-
-        if (noteMatch) {
-          const noteText = noteMatch[1].trim();
+      {entries.map((entry, index) => {
+        if (entry.type === "note") {
           return (
             <div
               key={index}
               className="w-full text-left my-1 mt-10 md:mt-20 items-end"
             >
               <p className="font-plex text-primary font-bold italic text-sm">
-                {noteText}
+                {entry.text}
               </p>
             </div>
           );
         }
 
-        const specialMatch = line.match(/^\*(.*)\*$/);
-
-        if (specialMatch) {
-          const innerText = specialMatch[1].trim();
+        if (entry.type === "narration") {
           return (
             <div key={index} className="flex justify-center w-full my-1">
               <div className="text-center">
                 <p className="font-plex text-accent font-semibold tracking-wide text-sm">
-                  {innerText}
+                  {entry.text}
                 </p>
+                {entry.originalText && (
+                  <p className="font-plex text-primary/40 text-xs italic mt-1">
+                    {entry.originalText}
+                  </p>
+                )}
               </div>
             </div>
           );
         }
 
-        const match = line.match(/^([^:]*):\s*(.*)/);
+        const char = entry.char;
 
-        let char = null;
-        let message = line;
-
-        if (match) {
-          const charId = match[1].trim();
-          const potentialMessage = match[2].trim();
-
-          char = chars.find((c) => c.char_id === charId);
-
-          if (char) {
-            message = potentialMessage;
-          } else if (line.startsWith(":")) {
-            message = potentialMessage;
-          }
-        }
         return (
           <div
             key={index}
@@ -132,8 +173,15 @@ export default function ChatBox() {
                 <p
                   className={`font-plex font-semibold text-sm md:text-md ${char ? "bg-bg-dark text-primary" : " italic text-primary"}`}
                 >
-                  {message}
+                  {entry.text}
                 </p>
+                {entry.originalText && (
+                  <p
+                    className={`font-plex text-primary/40 text-xs mt-1 ${!char ? "italic" : ""}`}
+                  >
+                    {entry.originalText}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -142,3 +190,4 @@ export default function ChatBox() {
     </section>
   );
 }
+

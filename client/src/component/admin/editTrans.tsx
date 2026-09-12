@@ -109,13 +109,17 @@ export default function EditTrans() {
         One line per statement. Use{" "}
         <code className="text-accent">charId: message</code> for dialogue,{" "}
         <code className="text-accent">*narration*</code> for narration,{" "}
-        <code className="text-accent">// note</code> for translator notes.
+        <code className="text-accent">// note</code> for translator notes,
+        and optionally a line starting with{" "}
+        <code className="text-accent">^</code> right after any dialogue or
+        narration line to show the original-language text below it, smaller
+        and subtler.
       </p>
       <textarea
         onChange={(e) => setContent(e.target.value)}
         value={content}
         className="px-4 py-4 min-h-125 bg-white/20 border rounded-md text-white w-full border-accent focus:border-accent-secondary outline-none resize-none"
-        placeholder={"riko: Hey, are you free later?\n: Sure, why do you ask?"}
+        placeholder={"riko: Hey, are you free later?\n^ 放課後、暇？\n: Sure, why do you ask?"}
       />
 
       <h1 className="mt-10 font-plex text-accent text-xl font-bold mb-3">

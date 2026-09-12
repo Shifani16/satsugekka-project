@@ -1,5 +1,6 @@
 import { useRef, useState, type ChangeEvent } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkBreaks from "remark-breaks";
 import { uploadImage } from "../../utils/adminApi";
 
 interface MarkdownEditorProps {
@@ -99,7 +100,7 @@ export default function MarkdownEditor({ value, onChange, baseURL }: MarkdownEdi
       ) : (
         <div className="min-h-100 p-4 bg-bg-dark/40 text-primary prose prose-invert max-w-none">
           {value ? (
-            <ReactMarkdown>{value}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkBreaks]}>{value}</ReactMarkdown>
           ) : (
             <p className="italic opacity-50">Nothing to preview yet.</p>
           )}

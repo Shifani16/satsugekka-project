@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import type { BlogEntry } from "../blog";
 import { motion } from "framer-motion";
+import ReactMarkdown from "react-markdown";
+import remarkBreaks from "remark-breaks";
 import { playClickSound } from "../../utils/playClickSound";
 
 export default function BlogPostDetail() {
@@ -83,10 +85,9 @@ export default function BlogPostDetail() {
         src="/img/Emotion-3.png"
         alt=""
       />
-      <div
-        className="mt-10 text-primary leading-relaxed blog-content text-sm md:text-base wrap-break-word hyphens-auto"
-        dangerouslySetInnerHTML={{ __html: post.content }}
-      />
+      <div className="mt-10 text-primary leading-relaxed blog-content prose prose-invert max-w-none text-sm md:text-base wrap-break-word hyphens-auto">
+        <ReactMarkdown remarkPlugins={[remarkBreaks]}>{post.content}</ReactMarkdown>
+      </div>
 
       {/* Pagination Controls */}
       <div className="mt-20 flex flex-col md:flex-row text-primary gap-4 md:gap-10 mb-20">
