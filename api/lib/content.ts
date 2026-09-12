@@ -1,11 +1,76 @@
-import fs from "fs";
-import path from "path";
 import matter from "gray-matter";
+import {cached, invalidate} from "./cache.js";
 
-const CONTENT_DIR = path.join(process.cwd(), "content");
-const BLOG_DIR = path.join(CONTENT_DIR, "blog");
-const TRANSLATION_DIR = path.join(CONTENT_DIR, "translation");
-const CHARACTERS_FILE = path.join(CONTENT_DIR, "characters.json");
+const GITHUB_API = "https://api.github.com";
+
+function githubConfig() {
+  const token = process.env.GITHUB_TOKEN;
+  const owner = process.env.GITHUB_OWNER;
+  const repo = process.env.GITHUB_REPO;
+  const branch = process.env.GITHUB_BRANCH || "main";
+  if (!token || !owner || !repo) {
+    throw new Error("Missing GITHUB_TOKEN, GITHUB_OWNER, or GITHUB_REPO env vars");
+  }
+  return { token, owner, repo, branch };
+}
+
+function authHeaders(token: string) {
+  return {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+  };
+}
+
+interface GithubDirEntry {
+  name: string;
+  path: string;
+  type: "file" | "dir";
+  download_url: string | null;
+}
+
+async function listDirectory(dirPath: string): Promise<GithubDirEntry[]> {
+  const { token, owner, repo, branch } = githubConfig();
+  const url = `${GITHUB_API}/repos/${owner}/${repo}/contents/${dirPath}?ref=${branch}`;
+  const res = await fetch(url, { headers: authHeaders(token) });
+
+  if (res.status === 404) return [];
+  if (!res.ok) throw new Error(`GitHub listDirectory failed: ${res.status} ${await res.text()}`);
+
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
+
+async function fetchRawFile(downloadUrl: string): Promise<string> {
+  const res = await fetch(downloadUrl);
+  if (!res.ok) throw new Error(`Failed to fetch raw file: ${res.status}`);
+  return res.text();
+}
+
+/** Fetches a single file's content via the Contents API (works even for private repos, unlike download_url in some edge cases). */
+async function fetchFileContent(filePath: string): Promise<string | null> {
+  const { token, owner, repo, branch } = githubConfig();
+  const url = `${GITHUB_API}/repos/${owner}/${repo}/contents/${filePath}?ref=${branch}`;
+  const res = await fetch(url, { headers: authHeaders(token) });
+
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`GitHub fetchFileContent failed: ${res.status} ${await res.text()}`);
+
+  const data = await res.json();
+  if (Array.isArray(data) || !data.content) return null;
+  return Buffer.from(data.content, "base64").toString("utf-8");
+}
+
+function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+}
+
+// ---------- Blog ----------
 
 export interface BlogPost {
   post_id: string;
@@ -18,55 +83,8 @@ export interface BlogPost {
   updated_at: string;
 }
 
-export interface TranslationPost {
-  translation_id: string; // slug
-  title: string;
-  content: string;
-  thumbnail_src: string;
-  short_description: string;
-  linkhref: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Character {
-  id: number;
-  char_id: string;
-  char_name: string;
-  char_img: string;
-  created_at: string;
-  updated_at: string;
-}
-
-function safeReadDir(dir: string): string[] {
-    try {
-        return fs.readdirSync(dir).filter((f) => f.endsWith(".md"));
-    } catch {
-        return [];
-    }
-}
-
-function slugify(input: string): string {
-    return input
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
-}
-
-export function listBlogPosts(): BlogPost[] {
-    const files = safeReadDir(BLOG_DIR);
-    const posts = files.map((file) => readBlogFile(file));
-    return posts.sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-    );
-}
-
-function readBlogFile(filename: string): BlogPost {
-  const raw = fs.readFileSync(path.join(BLOG_DIR, filename), "utf-8");
+function parseBlogFile(slug: string, raw: string): BlogPost {
   const { data, content } = matter(raw);
-  const slug = filename.replace(/\.md$/, "");
   return {
     post_id: slug,
     title: data.title || slug,
@@ -79,10 +97,28 @@ function readBlogFile(filename: string): BlogPost {
   };
 }
 
-export function getBlogPost(slug: string): BlogPost | null {
-  const filename = `${slug}.md`;
-  if (!fs.existsSync(path.join(BLOG_DIR, filename))) return null;
-  return readBlogFile(filename);
+export async function listBlogPosts(): Promise<BlogPost[]> {
+  return cached("blog:list", async () => {
+    const entries = await listDirectory("content/blog");
+    const files = entries.filter((e) => e.type === "file" && e.name.endsWith(".md") && e.download_url);
+
+    const posts = await Promise.all(
+      files.map(async (f) => {
+        const raw = await fetchRawFile(f.download_url!);
+        return parseBlogFile(f.name.replace(/\.md$/, ""), raw);
+      }),
+    );
+
+    return posts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  });
+}
+
+export async function getBlogPost(slug: string): Promise<BlogPost | null> {
+  return cached(`blog:one:${slug}`, async () => {
+    const raw = await fetchFileContent(`content/blog/${slug}.md`);
+    if (!raw) return null;
+    return parseBlogFile(slug, raw);
+  });
 }
 
 export function buildBlogMarkdown(post: {
@@ -93,14 +129,13 @@ export function buildBlogMarkdown(post: {
   created_at: string;
   updated_at: string;
 }): string {
-  const frontmatter = matter.stringify(post.content, {
+  return matter.stringify(post.content, {
     title: post.title,
     thumbnail_src: post.thumbnail_src,
     short_description: post.short_description,
     created_at: post.created_at,
     updated_at: post.updated_at,
   });
-  return frontmatter;
 }
 
 export function blogSlugFromTitle(title: string): string {
@@ -111,20 +146,26 @@ export function blogFilePath(slug: string): string {
   return `content/blog/${slug}.md`;
 }
 
-// ---------- Translation ----------
-
-export function listTranslationPosts(): TranslationPost[] {
-  const files = safeReadDir(TRANSLATION_DIR);
-  const posts = files.map((file) => readTranslationFile(file));
-  return posts.sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-  );
+export function invalidateBlogCache(slug?: string) {
+  invalidate("blog:list");
+  if (slug) invalidate(`blog:one:${slug}`);
 }
 
-function readTranslationFile(filename: string): TranslationPost {
-  const raw = fs.readFileSync(path.join(TRANSLATION_DIR, filename), "utf-8");
+// ---------- Translation ----------
+
+export interface TranslationPost {
+  translation_id: string;
+  title: string;
+  content: string;
+  thumbnail_src: string;
+  short_description: string;
+  linkhref: string;
+  created_at: string;
+  updated_at: string;
+}
+
+function parseTranslationFile(slug: string, raw: string): TranslationPost {
   const { data, content } = matter(raw);
-  const slug = filename.replace(/\.md$/, "");
   return {
     translation_id: slug,
     title: data.title || slug,
@@ -137,10 +178,28 @@ function readTranslationFile(filename: string): TranslationPost {
   };
 }
 
-export function getTranslationPost(slug: string): TranslationPost | null {
-  const filename = `${slug}.md`;
-  if (!fs.existsSync(path.join(TRANSLATION_DIR, filename))) return null;
-  return readTranslationFile(filename);
+export async function listTranslationPosts(): Promise<TranslationPost[]> {
+  return cached("translation:list", async () => {
+    const entries = await listDirectory("content/translation");
+    const files = entries.filter((e) => e.type === "file" && e.name.endsWith(".md") && e.download_url);
+
+    const posts = await Promise.all(
+      files.map(async (f) => {
+        const raw = await fetchRawFile(f.download_url!);
+        return parseTranslationFile(f.name.replace(/\.md$/, ""), raw);
+      }),
+    );
+
+    return posts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  });
+}
+
+export async function getTranslationPost(slug: string): Promise<TranslationPost | null> {
+  return cached(`translation:one:${slug}`, async () => {
+    const raw = await fetchFileContent(`content/translation/${slug}.md`);
+    if (!raw) return null;
+    return parseTranslationFile(slug, raw);
+  });
 }
 
 export function buildTranslationMarkdown(post: {
@@ -168,19 +227,37 @@ export function translationFilePath(slug: string): string {
   return `content/translation/${slug}.md`;
 }
 
-// ---------- Characters ----------
-
-export function listCharacters(): Character[] {
-  try {
-    const raw = fs.readFileSync(CHARACTERS_FILE, "utf-8");
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+export function invalidateTranslationCache(slug?: string) {
+  invalidate("translation:list");
+  if (slug) invalidate(`translation:one:${slug}`);
 }
 
-export function getCharacter(id: number): Character | null {
-  return listCharacters().find((c) => c.id === id) || null;
+// ---------- Characters ----------
+
+export interface Character {
+  id: number;
+  char_id: string;
+  char_name: string;
+  char_img: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function listCharacters(): Promise<Character[]> {
+  return cached("characters:list", async () => {
+    const raw = await fetchFileContent("content/characters.json");
+    if (!raw) return [];
+    try {
+      return JSON.parse(raw) as Character[];
+    } catch {
+      return [];
+    }
+  });
+}
+
+export async function getCharacter(id: number): Promise<Character | null> {
+  const chars = await listCharacters();
+  return chars.find((c) => c.id === id) || null;
 }
 
 export function characterFilePath(): string {
@@ -189,4 +266,8 @@ export function characterFilePath(): string {
 
 export function serializeCharacters(chars: Character[]): string {
   return JSON.stringify(chars, null, 2) + "\n";
+}
+
+export function invalidateCharacterCache() {
+  invalidate("characters:list");
 }
