@@ -28,10 +28,7 @@ export default function Login() {
       const result = await res.json();
 
       if (res.ok && result.success && result.token) {
-        // 2. Save the token string using your setToken helper!
         setToken(result.token);
-        
-        localStorage.setItem("is_admin", "true");
         window.location.href = "/create-blog";
       } else {
         alert(result.message || "Unauthorized");

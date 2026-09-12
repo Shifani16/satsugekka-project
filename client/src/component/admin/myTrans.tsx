@@ -3,6 +3,7 @@ import Popup from "../reusable/Popup";
 import type { TranslationEntry } from "../translation";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../reusable/Pagination";
+import { adminFetch } from "../../utils/adminApi";
 
 export default function MyTrans() {
   const [translations, setTranslation] = useState<TranslationEntry[]>([]);
@@ -19,7 +20,7 @@ export default function MyTrans() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const navigate = useNavigate();
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const [statusPopup, setStatusPopup] = useState({
     isOpen: false,
@@ -30,23 +31,34 @@ export default function MyTrans() {
 
   const baseURL = import.meta.env.VITE_API_URL;
 
+  const fetchTranslations = () => {
+    setIsLoading(true);
+    fetch(`${baseURL}/translation-posts`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        const transArray = data.translations || data;
+        setTranslation(Array.isArray(transArray) ? transArray : []);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Fetch failed", err);
+        setIsLoading(false);
+      });
+  };
+
   const handleDelete = async () => {
-    if (!selectedId) {
-      console.log("No ID selected, stopping delete.");
-      return;
-    }
+    if (!selectedId) return;
 
     try {
-      const resp = await fetch(`${baseURL}/translation-posts/${selectedId}`, {
+      const resp = await adminFetch(`${baseURL}/translation-posts/${selectedId}`, {
         method: "DELETE",
       });
 
-      setIsDeleteOpen(false);
-
       if (resp.ok) {
-        setTranslation(
-          translations.filter((b) => b.translation_id !== selectedId),
-        );
+        setTranslation((prev) => prev.filter((b) => b.translation_id !== selectedId));
         setIsDeleteOpen(false);
         setStatusPopup({
           isOpen: true,
@@ -56,52 +68,52 @@ export default function MyTrans() {
         });
         setSelectedId(null);
       } else {
+        const err = await resp.json().catch(() => ({}));
+        setIsDeleteOpen(false);
         setStatusPopup({
           isOpen: true,
           type: "danger",
           title: "Error",
-          message: "Failed to delete the post. Please try again.",
+          message:
+            resp.status === 401
+              ? "You're not logged in (or your session expired). Please log in again."
+              : err.error || "Failed to delete the post. Please try again.",
         });
       }
     } catch (err: any) {
-      console.error(err);
+      setIsDeleteOpen(false);
       setStatusPopup({
         isOpen: true,
         type: "danger",
         title: "Network Error",
-        message: "Could not connect to the server.",
+        message: err.message || "Could not connect to the server.",
       });
     }
   };
 
   useEffect(() => {
-    console.log("Starting fetch...");
-
-    fetch(`${baseURL}/translation-posts`)
-      .then((res) => {
-        console.log("Status", res.status);
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        console.log("Data", data);
-        const transArray = data.translations || data;
-        setTranslation(Array.isArray(transArray) ? transArray : []);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        console.log("Fetch failed", err);
-        setIsLoading(false);
-      });
+    fetchTranslations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  console.log("State:", translations);
 
   return (
     <section className="font-plex">
-      <h1 className="text-white text-3xl md:text-5xl font-bold">
-        My Translation
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-white text-3xl md:text-5xl font-bold">
+          My Translation
+        </h1>
+        <button
+          onClick={fetchTranslations}
+          className="text-sm font-plex text-accent hover:text-accent-secondary"
+        >
+          ↻ Refresh
+        </button>
+      </div>
+      <p className="text-primary/60 text-xs mt-2">
+        Publishing commits straight to your repo, so a new or edited post can
+        take a few seconds to show up here — use Refresh if you don't see it
+        right away.
+      </p>
 
       <div className="mt-10 overflow-x-auto">
         <table className="w-full">
@@ -126,7 +138,7 @@ export default function MyTrans() {
                   <td className="py-3">{translation.title}</td>
                   <td className="py-3">
                     {new Date(translation.updated_at).toLocaleDateString(
-                      "en-Gb",
+                      "en-GB",
                       {
                         day: "2-digit",
                         month: "2-digit",

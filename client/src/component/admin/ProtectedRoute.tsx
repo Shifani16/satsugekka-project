@@ -1,9 +1,8 @@
 import { Navigate, Outlet } from "react-router-dom";
+import { isLoggedIn } from "../../utils/adminApi";
 
 const ProtectedRoute = () => {
-  const isAdmin = localStorage.getItem("is_admin");
-
-  if (isAdmin !== "true") {
+  if (!isLoggedIn()) {
     return <Navigate to="/vani" replace />;
   }
 

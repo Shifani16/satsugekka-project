@@ -5,7 +5,7 @@ import Pagination from "./reusable/Pagination";
 
 export interface TranslationEntry {
   content: string;
-  translation_id: number;
+  translation_id: string;
   title: string;
   short_description: string;
   thumbnail_src: string;
@@ -117,8 +117,7 @@ export default function Translation() {
           </div>
         )}
       </div>
-
-      {/* Pagination Controls */}
+      
       {!isLoading && totalPages > 1 && (
         <div className="flex items-center justify-center mt-20 mb-10">
           <Pagination

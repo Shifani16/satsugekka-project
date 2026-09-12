@@ -5,7 +5,7 @@ import Pagination from "./reusable/Pagination";
 
 export interface BlogEntry {
   content: string;
-  post_id: number;
+  post_id: string;
   title: string;
   short_description: string;
   thumbnail_src: string;

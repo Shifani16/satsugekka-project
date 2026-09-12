@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { playClickSound } from "../../utils/playClickSound";
+import { isLoggedIn, clearToken } from "../../utils/adminApi";
 
 export default function Sidebar() {
-  const isAdmin = localStorage.getItem("is_admin") === "true";
+  const isAdmin = isLoggedIn();
   const navigate = useNavigate();
   
   const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = () => {
-    localStorage.removeItem("is_admin");
+    clearToken();
     navigate("/");
     setIsOpen(false); 
   };

@@ -3,6 +3,7 @@ import type { BlogEntry } from "../blog";
 import Pagination from "../reusable/Pagination";
 import Popup from "../reusable/Popup";
 import { useNavigate } from "react-router-dom";
+import { adminFetch } from "../../utils/adminApi";
 
 export default function MyBlog() {
   const [blogs, setBlogs] = useState<BlogEntry[]>([]);
@@ -17,59 +18,82 @@ export default function MyBlog() {
   const currentBlogs = blogs.slice(indexOfFirst, indexOfLast);
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const navigate = useNavigate();
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const baseURL = import.meta.env.VITE_API_URL;
 
-  const handleDelete = async () => {
-    console.log("Deleted");
-
-    if (!selectedId) return;
-
-    try {
-      const resp = await fetch(`${baseURL}/my-blog/${selectedId}`, {
-        method: "Delete",
-      });
-
-      if (resp.ok) {
-        setBlogs(blogs.filter((b) => b.post_id !== selectedId));
-        setIsDeleteOpen(false);
-      } else {
-        alert("Failed to delete");
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  useEffect(() => {
-    console.log("Starting fetch...");
-
+  const fetchBlogs = () => {
+    setIsLoading(true);
     fetch(`${baseURL}/my-blog`)
       .then((res) => {
-        console.log("Status:", res.status);
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();
       })
       .then((data) => {
-        console.log("Data", data);
         const blogArray = data.blogs || data;
         setBlogs(Array.isArray(blogArray) ? blogArray : []);
         setIsLoading(false);
       })
       .catch((err) => {
-        console.log("Fetch failed:", err);
+        console.error("Fetch failed:", err);
         setIsLoading(false);
       });
-  }, []);
+  };
 
-  console.log("State", blogs);
+  const handleDelete = async () => {
+    if (!selectedId) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    try {
+      const resp = await adminFetch(`${baseURL}/my-blog/${selectedId}`, {
+        method: "DELETE",
+      });
+
+      if (resp.ok) {
+        setBlogs((prev) => prev.filter((b) => b.post_id !== selectedId));
+        setIsDeleteOpen(false);
+        setSelectedId(null);
+      } else {
+        const err = await resp.json().catch(() => ({}));
+        setDeleteError(
+          resp.status === 401
+            ? "You're not logged in (or your session expired). Please log in again."
+            : err.error || "Failed to delete.",
+        );
+      }
+    } catch (err: any) {
+      setDeleteError(err.message || "Something went wrong.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBlogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <section className="font-plex">
-      <h1 className="text-white text-3xl md:text-5xl font-bold">My Blog</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-white text-3xl md:text-5xl font-bold">My Blog</h1>
+        <button
+          onClick={fetchBlogs}
+          className="text-sm font-plex text-accent hover:text-accent-secondary"
+        >
+          ↻ Refresh
+        </button>
+      </div>
+      <p className="text-primary/60 text-xs mt-2">
+        Publishing commits straight to your repo, so a new or edited post can
+        take a few seconds to show up here — use Refresh if you don't see it
+        right away.
+      </p>
 
       <div className="mt-10 overflow-x-auto">
         <table className="w-full">
@@ -112,6 +136,7 @@ export default function MyBlog() {
                       <i
                         onClick={() => {
                           setSelectedId(blog.post_id);
+                          setDeleteError(null);
                           setIsDeleteOpen(true);
                         }}
                         className="fa-solid fa-trash text-sm md:text-xl hover:text-accent-secondary cursor-pointer"
@@ -144,12 +169,20 @@ export default function MyBlog() {
         </div>
         <Popup
           isOpen={isDeleteOpen}
-          onClose={() => setIsDeleteOpen(false)}
+          onClose={() => {
+            setIsDeleteOpen(false);
+            setDeleteError(null);
+          }}
           onConfirm={handleDelete}
           title="Delete"
           type="confirm"
         >
-          <p className="text-lg">Are you sure to delete?</p>
+          <p className="text-lg">
+            {isDeleting ? "Deleting..." : "Are you sure you want to delete this?"}
+          </p>
+          {deleteError && (
+            <p className="text-red-400 text-sm mt-2">{deleteError}</p>
+          )}
         </Popup>
       </div>
     </section>
