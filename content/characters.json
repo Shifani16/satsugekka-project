@@ -14,5 +14,13 @@
     "char_img": "https://x7fxk6qayhvfxt8v.public.blob.vercel-storage.com/haru-MVThIYtF2mEK1di7yCr0H6Wmw37xjJ.png",
     "created_at": "2026-09-18T14:19:11.983Z",
     "updated_at": "2026-09-18T14:20:48.800Z"
+  },
+  {
+    "id": 3,
+    "char_id": "tm",
+    "char_name": "Inumaru Touma",
+    "char_img": "https://x7fxk6qayhvfxt8v.public.blob.vercel-storage.com/touma-CIceiEAQ8aady39dQRdRu2oJRrFHFB.png",
+    "created_at": "2026-09-18T14:26:57.392Z",
+    "updated_at": "2026-09-18T14:26:57.392Z"
   }
 ]
