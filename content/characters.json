@@ -30,5 +30,13 @@
     "char_img": "https://x7fxk6qayhvfxt8v.public.blob.vercel-storage.com/mina-Q8yaxrldLj3LLv0wmf0b1W7lgivepO.png",
     "created_at": "2026-09-18T14:27:20.067Z",
     "updated_at": "2026-09-18T14:27:20.067Z"
+  },
+  {
+    "id": 5,
+    "char_id": "tr",
+    "char_name": "Mido Torao",
+    "char_img": "https://x7fxk6qayhvfxt8v.public.blob.vercel-storage.com/tora-iYqV6Q4bnJkEiktO8P6w1FA9RCNoQv.png",
+    "created_at": "2026-09-18T14:27:39.977Z",
+    "updated_at": "2026-09-18T14:27:39.977Z"
   }
 ]
