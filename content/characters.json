@@ -22,5 +22,13 @@
     "char_img": "https://x7fxk6qayhvfxt8v.public.blob.vercel-storage.com/touma-CIceiEAQ8aady39dQRdRu2oJRrFHFB.png",
     "created_at": "2026-09-18T14:26:57.392Z",
     "updated_at": "2026-09-18T14:26:57.392Z"
+  },
+  {
+    "id": 4,
+    "char_id": "mn",
+    "char_name": "Natsume Minami",
+    "char_img": "https://x7fxk6qayhvfxt8v.public.blob.vercel-storage.com/mina-Q8yaxrldLj3LLv0wmf0b1W7lgivepO.png",
+    "created_at": "2026-09-18T14:27:20.067Z",
+    "updated_at": "2026-09-18T14:27:20.067Z"
   }
 ]
