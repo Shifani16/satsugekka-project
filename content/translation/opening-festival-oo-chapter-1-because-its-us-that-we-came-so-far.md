@@ -2,13 +2,13 @@
 title: 'Opening Festival ～ŹOOĻ～ Chapter 1: Because it''s us that we came so far'
 thumbnail_src: >-
   https://x7fxk6qayhvfxt8v.public.blob.vercel-storage.com/%C5%B9OO%C4%BB_%28New_Sensation%29-jgjLYT622WCm4oHAKyqfuP1isRWWTj.png
-short_description: ＊stage*
+short_description: '*stage*'
 created_at: '2026-09-20T05:58:25.036Z'
-updated_at: '2026-09-20T05:58:25.036Z'
+updated_at: '2026-09-20T06:01:13.680Z'
 ---
-＊stage*
+*stage*
 tm: Sorry to keep you waiting! we are...
-Ｚ：ŹOOĻ!
+Ｚ: ŹOOĻ!
 audience: kyaaaaaah....!
 mn: From now on, let us spend this dangerous secret night together
 hr: Welcome to ŹOOĻ opening festival!
