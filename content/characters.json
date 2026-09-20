@@ -62,5 +62,13 @@
     "char_img": "https://x7fxk6qayhvfxt8v.public.blob.vercel-storage.com/trhrmn-2gvZORitgORv3leh8E32JlMq7x2T5L.png",
     "created_at": "2026-09-20T05:52:41.445Z",
     "updated_at": "2026-09-20T05:52:41.445Z"
+  },
+  {
+    "id": 9,
+    "char_id": "trmn",
+    "char_name": "Torao & Minami",
+    "char_img": "https://x7fxk6qayhvfxt8v.public.blob.vercel-storage.com/trmn-jPGPFafV5EanDq1k5KNZHS9R0E3TB7.png",
+    "created_at": "2026-09-20T05:53:04.748Z",
+    "updated_at": "2026-09-20T05:53:04.748Z"
   }
 ]
