@@ -2,11 +2,11 @@
 title: 'Opening Festival ～ŹOOĻ～ Chapter 1: Because it''s us that we came so far'
 thumbnail_src: >-
   https://x7fxk6qayhvfxt8v.public.blob.vercel-storage.com/%C5%B9OO%C4%BB_%28New_Sensation%29-jgjLYT622WCm4oHAKyqfuP1isRWWTj.png
-short_description: '*stage*'
+short_description: '*Rainbow City''s Stage*'
 created_at: '2026-09-20T05:58:25.036Z'
-updated_at: '2026-09-20T06:01:45.163Z'
+updated_at: '2026-09-20T06:02:27.113Z'
 ---
-*stage*
+*Rainbow City's Stage*
 tm: Sorry to keep you waiting! we are...
 Z: ŹOOĻ!
 audience: kyaaaaaah....!
