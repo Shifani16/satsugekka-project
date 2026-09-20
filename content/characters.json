@@ -54,5 +54,13 @@
     "char_img": "https://x7fxk6qayhvfxt8v.public.blob.vercel-storage.com/zool-b0hlB7ydyaKcxGxrOBJJnXZUV4wroD.png",
     "created_at": "2026-09-20T05:51:55.643Z",
     "updated_at": "2026-09-20T05:51:55.643Z"
+  },
+  {
+    "id": 8,
+    "char_id": "trhrmn",
+    "char_name": "Torao & Haruka & Minami",
+    "char_img": "https://x7fxk6qayhvfxt8v.public.blob.vercel-storage.com/trhrmn-2gvZORitgORv3leh8E32JlMq7x2T5L.png",
+    "created_at": "2026-09-20T05:52:41.445Z",
+    "updated_at": "2026-09-20T05:52:41.445Z"
   }
 ]
