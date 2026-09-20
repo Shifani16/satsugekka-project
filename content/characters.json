@@ -46,5 +46,13 @@
     "char_img": "https://x7fxk6qayhvfxt8v.public.blob.vercel-storage.com/utsugi-0GUNm5bBbwbXvNsFNTODVlP3zUZMlv.png",
     "created_at": "2026-09-20T05:50:58.749Z",
     "updated_at": "2026-09-20T05:50:58.749Z"
+  },
+  {
+    "id": 7,
+    "char_id": "utg",
+    "char_name": "Utsugi Shiro",
+    "char_img": "https://x7fxk6qayhvfxt8v.public.blob.vercel-storage.com/utsugi-inwkyMv4kgQQwEdC69w6AWT3GNnuD9.png",
+    "created_at": "2026-09-20T05:51:01.668Z",
+    "updated_at": "2026-09-20T05:51:01.668Z"
   }
 ]
