@@ -4,31 +4,53 @@ thumbnail_src: >-
   https://x7fxk6qayhvfxt8v.public.blob.vercel-storage.com/%C5%B9OO%C4%BB_%28New_Sensation%29-jgjLYT622WCm4oHAKyqfuP1isRWWTj.png
 short_description: '*Rainbow City''s Stage*'
 created_at: '2026-09-20T05:58:25.036Z'
-updated_at: '2026-09-20T06:02:27.113Z'
+updated_at: '2026-09-20T06:08:09.333Z'
 ---
 *Rainbow City's Stage*
 tm: Sorry to keep you waiting! we are...
+^待たせたな！俺たちが....
 Z: ŹOOĻ!
+^ŹOOĻだ！
 audience: kyaaaaaah....!
+^観客：きゃあああああ。。。。つ
 mn: From now on, let us spend this dangerous secret night together
+^これから、私たちだけの秘密の危険な夜を過ごしましょう
 hr: Welcome to ŹOOĻ opening festival!
+^オープニングフェスティバルŹOOĻ へようこそ
 hr: Everyone, are you ready? I won't forgive you if you looking away from us
+^みんな、覚悟はできてる？よそ見なんかしたら、許さない
 hr: Let our song carved into your soul, okay!
+^俺たちのうた、魂に焼き付け帰るよな！
 audience: kyaaaaaah....!
+^きゃあああああ。。。。つ
 tr: It's not enough at all! raise your voice more!
+^まだまだ足りないな！もっと、声を上げる！
 tr: Let's start our finest party, the one you won't forget once you experienced it
+^一度体験したら、二度と忘れられない、極上のパーティーをはじめようぜ
 audience: kyaaaaaah....!
+^きゃあああああ。。。。つ
 tm: Okay, let us start our wild and forbidden play
+^さあ。とびきりの、いけない遊びをしようぜ
 tm: In this live, you guys want to hear our new song right!?
+^このライブで、俺たちの新曲、聴きたいよな！？
 audience: kyaaaaaah....!
+^きゃあああああ。。。。つ
 audience: A new song...!
-audience: I wonder if it's a theme song for new drama?! or maybe it's a CM (commercial) song!?
+^新曲だって....！
+audience: I wonder if it's a theme song for new drama?! or maybe it's a CM song!?
+^何かのドラマの主題歌かな！？ＣＭソングとか！？
 hr: Okay, you guys! make sure to only listen to our voices and your own heartbeat, yeah!?
+^いいか、おまえら！？最後まで、俺たちの声と、自部の心音だけ聴いてろよ！？
 audience: kyaaaaaah....!
+^きゃあああああ。。。。つ
 hr: Raise your voice more! cast aside your vanity, strip away all of it and show more of your desire! Let yourself...
+^もっと、もっと、飾りを捨てろ！生身になって、欲を思い出せ！もっと、俺たちを....
 hr: Let yourself desire ŹOOĻ more!
+^ŹOOĻを欲しがれよ！
 audience: kyaaaaaah....!
+^きゃあああああ。。。。つ
 tr: You guys are the best! with this let us become one! first of all with this song!
+^最高だ！このまま、ひとつになろうぜ！まずはこの曲！
 tm: ZONE OF OVERLAP!
 
 *Tsukumo office*
